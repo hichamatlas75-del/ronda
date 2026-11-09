@@ -1,0 +1,2178 @@
+<!doctype html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ronda - Jeu de Cartes Marocain</title>
+<meta name="description" content="Jeu de cartes traditionnel marocain Ronda avec animations fluides, sons authentiques en Darija et mode hors-ligne.">
+<meta name="theme-color" content="#14664a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<style>
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  --bg: #0b2e22;
+  --felt: #12583f;
+  --felt-dark: #0a3d2c;
+  --felt-border: #1d7e5d;
+  --fg: #f5f2e9;
+  --fg-dim: #cbd5cb;
+  --card-bg: #fffdf7;
+  --card-border: #e6dfcd;
+  --ink: #1a1a1a;
+  --accent: #f5c542;
+  --accent-glow: rgba(245, 197, 66, 0.55);
+  --btn: #f5c542;
+  --btn-hover: #ffd768;
+  --btnfg: #291c00;
+  --danger: #e04848;
+  --success: #3ecf8e;
+  --modal-bg: rgba(10, 24, 18, 0.88);
+  --card-w: clamp(52px, 15vw, 84px);
+  --card-h: calc(var(--card-w) * 1.42);
+  --card-radius: 9px;
+  --anim-speed: 450ms;
+}
+
+[dir="rtl"] {
+  font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: inherit; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+  overflow-x: hidden;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px 14px;
+}
+
+/* App Header */
+header {
+  width: min(98vw, 680px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 4px 2px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 1.28rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.brand-badge {
+  font-size: 0.72rem;
+  background: rgba(245, 197, 66, 0.18);
+  color: var(--accent);
+  border: 1px solid rgba(245, 197, 66, 0.4);
+  padding: 2px 7px;
+  border-radius: 12px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Buttons and Controls */
+button, select {
+  font: inherit;
+  border-radius: 999px;
+  border: 0;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--fg);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 1.05rem;
+}
+
+.btn-icon:hover {
+  background: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: var(--btn);
+  color: var(--btnfg);
+  font-weight: 700;
+  padding: 7px 14px;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.btn-primary:hover {
+  background: var(--btn-hover);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: rgba(255,255,255,0.15);
+  color: var(--fg);
+  padding: 7px 14px;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.btn-secondary:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+/* Game Table Container */
+#game-container {
+  width: min(98vw, 680px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Scoreboard Card */
+#scoreboard {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 8px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.92rem;
+}
+
+.score-col {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.score-num {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.dealer-tag {
+  font-size: 0.72rem;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #2a664f;
+  color: #a7f3d0;
+  margin-inline-start: 4px;
+}
+
+.round-info {
+  text-align: center;
+  font-size: 0.78rem;
+  opacity: 0.85;
+}
+
+/* Felt Card Table */
+#felt {
+  width: 100%;
+  background: radial-gradient(circle at 50% 50%, var(--felt) 0%, var(--felt-dark) 100%);
+  border: 4px solid var(--felt-border);
+  border-radius: 20px;
+  padding: 10px 12px;
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  min-height: 480px;
+  justify-content: space-between;
+}
+
+/* Opponent and Player Rows */
+.player-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.player-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.won-pile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.22);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+.won-pile.bounce {
+  transform: scale(1.15);
+  border-color: var(--accent);
+}
+
+.mini-card-stack {
+  width: 20px;
+  height: 28px;
+  border-radius: 4px;
+  background: repeating-linear-gradient(45deg, #7a1f2b, #7a1f2b 3px, #5a1320 3px, #5a1320 6px);
+  border: 1.5px solid #fff;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+  position: relative;
+}
+
+/* Cards Rows */
+.hand-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--card-h);
+  padding: 2px 0;
+}
+
+/* Table Center Area */
+#table-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.24);
+  border-radius: 16px;
+  padding: 10px;
+  min-height: calc(var(--card-h) + 24px);
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+#deck-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  width: var(--card-w);
+}
+
+#deck-card {
+  width: var(--card-w);
+  height: var(--card-h);
+  border-radius: var(--card-radius);
+  background: repeating-linear-gradient(45deg, #7a1f2b, #7a1f2b 6px, #5a1320 6px, #5a1320 12px);
+  border: 2.5px solid #fffdf7;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: #fff;
+  position: relative;
+}
+
+#deck-card.empty {
+  background: rgba(255,255,255,0.06);
+  border: 2px dashed rgba(255,255,255,0.2);
+  color: transparent;
+}
+
+.deck-count {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+#table-cards {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: var(--card-h);
+  padding: 4px;
+}
+
+/* Playing Card Component */
+.card {
+  width: var(--card-w);
+  height: var(--card-h);
+  background: var(--card-bg);
+  color: var(--ink);
+  border-radius: var(--card-radius);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 2px;
+  font-family: Georgia, "Times New Roman", serif;
+  position: relative;
+  user-select: none;
+  transition: transform 0.14s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.14s ease, outline 0.14s ease;
+}
+
+.card b {
+  font-size: clamp(16px, 4.5vw, 24px);
+  line-height: 1;
+  align-self: flex-start;
+  margin-inline-start: 4px;
+}
+
+.card i {
+  font-style: normal;
+  font-size: clamp(20px, 5.5vw, 32px);
+  line-height: 1;
+}
+
+.card .card-name {
+  font-family: system-ui, sans-serif;
+  font-size: 9px;
+  min-height: 11px;
+  text-align: center;
+  opacity: 0.85;
+}
+
+/* Suits Colors */
+.copas { color: #c0262d; }
+.oros { color: #b98a00; }
+.bastos { color: #1e7c3a; }
+.espadas { color: #1d4fa1; }
+
+/* Card Back */
+.card.back {
+  background: repeating-linear-gradient(45deg, #7a1f2b, #7a1f2b 6px, #5a1320 6px, #5a1320 12px);
+  border: 2.5px solid var(--card-bg);
+}
+
+/* Interactive Card states */
+.mine {
+  cursor: pointer;
+}
+
+.mine:hover, .mine:focus-visible {
+  transform: translateY(-10px) scale(1.04);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.5);
+  z-index: 2;
+}
+
+.mine.can-capture {
+  outline: 3px solid #38ef7d;
+  box-shadow: 0 0 12px rgba(56, 239, 125, 0.5);
+}
+
+/* Last Played Card Highlight */
+.last-played {
+  outline: 3px solid var(--accent);
+  box-shadow: 0 0 16px var(--accent-glow);
+  animation: pulseLast 1.8s infinite;
+}
+
+.last-tag {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: var(--btnfg);
+  font-family: system-ui, sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 8px;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  z-index: 3;
+}
+
+@keyframes pulseLast {
+  0% { box-shadow: 0 0 8px var(--accent-glow); }
+  50% { box-shadow: 0 0 20px rgba(245, 197, 66, 0.9); }
+  100% { box-shadow: 0 0 8px var(--accent-glow); }
+}
+
+/* Highlight capturing cards */
+.capturing {
+  outline: 3.5px solid #22c55e !important;
+  transform: scale(1.08) !important;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.8) !important;
+  z-index: 4;
+}
+
+/* Flying animated clone */
+.flying-card {
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+  transition: transform var(--anim-speed) cubic-bezier(0.2, 0.8, 0.2, 1), opacity var(--anim-speed) ease;
+  will-change: transform, opacity;
+}
+
+/* Manual Announcement Banner */
+#announce-bar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: linear-gradient(90deg, #d97706, #b45309);
+  padding: 8px 14px;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  animation: bounceIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+.announce-btn {
+  background: #fef3c7;
+  color: #78350f;
+  font-weight: 800;
+  padding: 6px 14px;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+.announce-btn:hover {
+  background: #fff;
+  transform: scale(1.04);
+}
+
+/* Pop-up Event Badge (Missa, Bount, Combo) */
+#event-banner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  background: rgba(14, 58, 41, 0.95);
+  border: 3px solid var(--accent);
+  color: var(--accent);
+  font-size: 1.45rem;
+  font-weight: 900;
+  padding: 10px 22px;
+  border-radius: 999px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 24px var(--accent-glow);
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.3), opacity 0.35s ease;
+  text-align: center;
+}
+
+#event-banner.show {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+/* Info and Log bar */
+#status-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+  font-size: 0.92rem;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
+#turn-hint {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+#log-ticker {
+  font-size: 0.82rem;
+  color: var(--fg-dim);
+  line-height: 1.35;
+  min-height: 2.2em;
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--modal-bg);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 14px;
+}
+
+.modal-dialog {
+  background: #144e39;
+  color: var(--fg);
+  border: 2px solid var(--accent);
+  border-radius: 18px;
+  width: min(96vw, 560px);
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-close {
+  background: transparent;
+  color: var(--fg);
+  font-size: 1.4rem;
+  padding: 4px 8px;
+}
+
+.modal-close:hover {
+  color: var(--accent);
+}
+
+/* Tabs */
+.tab-row {
+  display: flex;
+  gap: 6px;
+  border-bottom: 2px solid rgba(255,255,255,0.12);
+  padding-bottom: 6px;
+}
+
+.tab-btn {
+  background: rgba(255,255,255,0.08);
+  color: var(--fg-dim);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.tab-btn.active {
+  background: var(--accent);
+  color: var(--btnfg);
+}
+
+/* Settings Form */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 500px) {
+  .form-grid { grid-template-columns: 1fr; }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-group label {
+  font-size: 0.82rem;
+  color: var(--fg-dim);
+  font-weight: 600;
+}
+
+.form-group select, .form-group input {
+  background: #09261c;
+  color: var(--fg);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+}
+
+.form-group input[type="range"] {
+  padding: 0;
+  accent-color: var(--accent);
+}
+
+/* Audio Controls Popover */
+#audio-panel {
+  position: absolute;
+  top: 48px;
+  right: 12px;
+  background: #103d2e;
+  border: 2px solid var(--accent);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  z-index: 80;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 220px;
+}
+
+[dir="rtl"] #audio-panel {
+  right: auto;
+  left: 12px;
+}
+
+/* Tutorial / Trial Mode UI */
+#trial-board {
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trial-step-desc {
+  font-size: 0.92rem;
+  line-height: 1.45;
+  background: rgba(245, 197, 66, 0.12);
+  border-inline-start: 4px solid var(--accent);
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+
+.trial-arena {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.trial-cards-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  min-height: calc(var(--card-h) * 0.9);
+}
+
+/* Stats Cards */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.stat-card {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px;
+  text-align: center;
+}
+
+.stat-card .val {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.stat-card .lbl {
+  font-size: 0.75rem;
+  color: var(--fg-dim);
+  margin-top: 4px;
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="brand">
+    <h1>🎴 <span data-i18n="title">Ronda</span></h1>
+    <span class="brand-badge" id="lv-badge">Habitué</span>
+  </div>
+
+  <div class="header-actions">
+    <!-- Quick Audio Mute / Popover -->
+    <button class="btn-icon" id="btn-sound" title="Son & Voix" aria-label="Audio">🔊</button>
+    <!-- Rules & Trial -->
+    <button class="btn-icon" id="btn-rules" title="Règles & Mode d'essai" aria-label="Règles">📖</button>
+    <!-- Settings -->
+    <button class="btn-icon" id="btn-settings" title="Paramètres" aria-label="Paramètres">⚙️</button>
+    <!-- Stats -->
+    <button class="btn-icon" id="btn-stats" title="Statistiques" aria-label="Statistiques">📊</button>
+    <!-- Language toggle -->
+    <button class="btn-secondary" id="btn-lang" title="Changer de langue">🇲🇦 دارجة</button>
+    <!-- New Game -->
+    <button class="btn-primary" id="btn-new" data-i18n="newGame">Nouvelle</button>
+  </div>
+</header>
+
+<!-- Audio Settings Popover -->
+<div id="audio-panel">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <b style="font-size:0.9rem;" data-i18n="audioSettings">Réglages Audio</b>
+    <button class="modal-close" id="btn-close-audio" style="font-size:1rem;">✕</button>
+  </div>
+  <div class="form-group">
+    <label data-i18n="volume">Volume général</label>
+    <input type="range" id="vol-slider" min="0" max="1" step="0.05" value="0.8">
+  </div>
+  <div class="form-group">
+    <label data-i18n="voiceLang">Voix des répliques</label>
+    <select id="voice-lang-select">
+      <option value="darija">🇲🇦 الدارجة المغربية</option>
+      <option value="fr">🇫🇷 Français</option>
+      <option value="none">🔇 Désactivée (SFX seul)</option>
+    </select>
+  </div>
+  <div style="display:flex; gap:6px; margin-top:4px;">
+    <button class="btn-secondary" id="btn-toggle-mute" style="flex:1;" data-i18n="mute">Muet</button>
+    <button class="btn-secondary" id="btn-test-sound" style="flex:1;" data-i18n="testSound">Tester</button>
+  </div>
+</div>
+
+<!-- Main Game Area -->
+<div id="game-container">
+
+  <!-- Scoreboard -->
+  <div id="scoreboard">
+    <div class="score-col">
+      <div>
+        <span style="font-weight:700;" data-i18n="you">Toi</span>
+        <span class="dealer-tag" id="dealer-me" style="display:none;" data-i18n="dealer">Donneur</span>
+      </div>
+      <div class="score-num" id="score-me">0</div>
+    </div>
+
+    <div class="round-info">
+      <div><span data-i18n="target">Objectif</span> <b id="score-target">21</b> pts</div>
+      <div><span data-i18n="round">Manche</span> <b id="round-num">1</b></div>
+    </div>
+
+    <div class="score-col">
+      <div class="score-num" id="score-opp">0</div>
+      <div>
+        <span style="font-weight:700;" data-i18n="ai">Adversaire</span>
+        <span class="dealer-tag" id="dealer-opp" style="display:none;" data-i18n="dealer">Donneur</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Green Felt Card Table -->
+  <div id="felt">
+    <!-- Pop-up Event Banner (Bount, Missa, Ronda, etc.) -->
+    <div id="event-banner">BOUNT ! +1</div>
+
+    <!-- Opponent Bar -->
+    <div class="player-bar">
+      <div class="player-label">
+        <span>🤖</span>
+        <span data-i18n="ai">Adversaire</span>
+      </div>
+      <div class="won-pile" id="pile-opp">
+        <div class="mini-card-stack"></div>
+        <span><b id="count-opp-won">0</b> <small data-i18n="cardsWon">cartes</small></span>
+      </div>
+    </div>
+
+    <!-- Opponent Hand -->
+    <div class="hand-row" id="opp-hand"></div>
+
+    <!-- Center Felt Table (Deck + Table Cards) -->
+    <div id="table-area">
+      <!-- Draw Deck -->
+      <div id="deck-slot">
+        <div id="deck-card">🎴</div>
+        <div class="deck-count"><span data-i18n="deck">Pioche</span>: <span id="deck-left">30</span></div>
+      </div>
+
+      <!-- Table Cards -->
+      <div id="table-cards"></div>
+    </div>
+
+    <!-- Manual Announcement Bar -->
+    <div id="announce-bar">
+      <span id="announce-text">📢 Tu as une Ronda !</span>
+      <button class="announce-btn" id="btn-announce" data-i18n="announce">Annoncer !</button>
+    </div>
+
+    <!-- Player Hand -->
+    <div class="hand-row" id="my-hand"></div>
+
+    <!-- Player Bar -->
+    <div class="player-bar">
+      <div class="player-label">
+        <span>👤</span>
+        <span data-i18n="you">Toi</span>
+      </div>
+      <div class="won-pile" id="pile-me">
+        <div class="mini-card-stack"></div>
+        <span><b id="count-me-won">0</b> <small data-i18n="cardsWon">cartes</small></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status & Log -->
+  <div id="status-bar">
+    <div id="turn-hint">👉 À toi de jouer</div>
+    <div id="log-ticker">Prépare-toi pour la donne.</div>
+  </div>
+</div>
+
+<!-- Game Over Modal -->
+<div class="modal-overlay" id="modal-end">
+  <div class="modal-dialog" style="text-align:center;">
+    <h2 id="end-title" style="justify-content:center; font-size:1.6rem;">Partie Terminée</h2>
+    <p id="end-desc" style="font-size:1.1rem; margin:10px 0;"></p>
+    <div class="stats-grid" id="end-scores"></div>
+    <div style="display:flex; justify-content:center; gap:10px; margin-top:14px;">
+      <button class="btn-primary" id="btn-restart" data-i18n="playAgain">Rejouer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Resume Saved Game Modal -->
+<div class="modal-overlay" id="modal-resume">
+  <div class="modal-dialog" style="text-align:center;">
+    <h2 style="justify-content:center;" data-i18n="resumeGame">Partie en cours</h2>
+    <p id="resume-desc" style="font-size:1.05rem;"></p>
+    <div style="display:flex; justify-content:center; gap:10px; margin-top:10px;">
+      <button class="btn-primary" id="btn-do-resume" data-i18n="resume">Reprendre</button>
+      <button class="btn-secondary" id="btn-do-discard" data-i18n="newGame">Nouvelle partie</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rules & Trial Mode Modal -->
+<div class="modal-overlay" id="modal-rules">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h2>📖 <span data-i18n="rulesTitle">Règles & Mode d'essai</span></h2>
+      <button class="modal-close" id="btn-close-rules">✕</button>
+    </div>
+
+    <div class="tab-row">
+      <button class="tab-btn active" id="tab-rules-txt" data-i18n="tabRules">Règles complètes</button>
+      <button class="tab-btn" id="tab-rules-trial" data-i18n="tabTrial">Mode d'essai interactif</button>
+    </div>
+
+    <!-- Tab 1: Rules text -->
+    <div id="panel-rules-txt" style="display:flex; flex-direction:column; gap:12px; font-size:0.92rem; line-height:1.5;">
+      <div>
+        <h3 style="color:var(--accent); margin:4px 0;" data-i18n="ruleCards">1. Le jeu de 40 cartes espagnoles</h3>
+        <p data-i18n="ruleCardsDesc">Ronda se joue avec 40 cartes réparties en 4 enseignes : Copas (Coupes), Oros (Or/Dinar), Bastos (Bâtons), Espadas (Épées). Chaque enseigne comprend les cartes 1 à 7, puis 10 (Sota/Valet), 11 (Caballo/Cavalier) et 12 (Rey/Roi). <b>Il n'y a pas de 8 ni de 9 !</b> La suite saute directement de 7 à 10.</p>
+      </div>
+
+      <div>
+        <h3 style="color:var(--accent); margin:4px 0;" data-i18n="ruleCapture">2. La Prise (Capture) et les Suites</h3>
+        <p data-i18n="ruleCaptureDesc">Quand tu joues une carte de même valeur qu'une carte posée sur la table, tu ramasses cette carte ainsi que <b>toutes les cartes consécutives supérieures</b> présentes ! Par exemple, si la table contient 7, 10 et 11, poser un 7 ramasse le 7, le 10 et le 11 d'un coup.</p>
+      </div>
+
+      <div>
+        <h3 style="color:var(--accent); margin:4px 0;" data-i18n="ruleAnnounces">3. Les Annonces : Ronda et Tringa</h3>
+        <p data-i18n="ruleAnnouncesDesc">À chaque donne de 3 cartes :<br>
+        • <b>Ronda (+1 pt)</b> : Avoir 2 cartes identiques en main.<br>
+        • <b>Tringa (+5 pts)</b> : Avoir les 3 cartes identiques en main.<br>
+        Si les deux joueurs ont une annonce, celle avec le rang le plus élevé gagne les points.</p>
+      </div>
+
+      <div>
+        <h3 style="color:var(--accent); margin:4px 0;" data-i18n="ruleBonuses">4. Les Bonus de Table : Bount et Missa</h3>
+        <p data-i18n="ruleBonusesDesc">• <b>Bount (+1 pt)</b> : Prendre immédiatement la carte que l'adversaire vient de poser.<br>
+        • <b>Missa (+1 pt)</b> : Vider complètement la table lors d'une capture (table propre).</p>
+      </div>
+
+      <div>
+        <h3 style="color:var(--accent); margin:4px 0;" data-i18n="ruleScoring">5. Décompte de fin de manche</h3>
+        <p data-i18n="ruleScoringDesc">À la fin des 36 cartes jouées, les cartes restantes sur la table vont au dernier joueur ayant fait une prise. Chaque joueur compte ses cartes gagnées : chaque carte au-delà de 20 rapporte 1 point (ex: 24 cartes = +4 points). Le premier à atteindre le score cible (21 ou 41) gagne la partie !</p>
+      </div>
+    </div>
+
+    <!-- Tab 2: Interactive Trial Mode -->
+    <div id="panel-rules-trial" style="display:none; flex-direction:column; gap:12px;">
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button class="btn-secondary" id="trial-step-suite" style="font-size:0.82rem;">1. Suite 7-10-11</button>
+        <button class="btn-secondary" id="trial-step-bount" style="font-size:0.82rem;">2. Bount</button>
+        <button class="btn-secondary" id="trial-step-missa" style="font-size:0.82rem;">3. Missa</button>
+        <button class="btn-secondary" id="trial-step-ronda" style="font-size:0.82rem;">4. Ronda</button>
+        <button class="btn-secondary" id="trial-step-tringa" style="font-size:0.82rem;">5. Tringa</button>
+      </div>
+
+      <div class="trial-step-desc" id="trial-instructions"></div>
+
+      <div id="trial-board">
+        <div style="text-align:center; font-size:0.8rem; opacity:0.8;" data-i18n="tableCards">Cartes sur la table</div>
+        <div class="trial-cards-row" id="trial-table-row"></div>
+
+        <div style="text-align:center; font-size:0.8rem; opacity:0.8; margin-top:8px;" data-i18n="yourHand">Ta main (clique pour jouer)</div>
+        <div class="trial-cards-row" id="trial-hand-row"></div>
+      </div>
+
+      <div id="trial-feedback" style="font-size:0.88rem; font-weight:600; text-align:center; min-height:2em; color:var(--accent);"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="modal-settings">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h2>⚙️ <span data-i18n="settingsTitle">Réglages de règles</span></h2>
+      <button class="modal-close" id="btn-close-settings">✕</button>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label data-i18n="targetScore">Score cible</label>
+        <select id="cfg-target">
+          <option value="21">21 points (standard café)</option>
+          <option value="41">41 points (grande partie)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label data-i18n="aiLevel">Niveau de l'IA</label>
+        <select id="cfg-difficulty">
+          <option value="debutant">Débutant</option>
+          <option value="habitue">Habitué de café</option>
+          <option value="maitre">Maître de Ronda</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label data-i18n="tringaPts">Points de la Tringa</label>
+        <select id="cfg-tringa">
+          <option value="5">5 points (standard)</option>
+          <option value="3">3 points</option>
+          <option value="10">10 points</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label data-i18n="rondaPts">Points de la Ronda</label>
+        <select id="cfg-ronda">
+          <option value="1">1 point (standard)</option>
+          <option value="2">2 points</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label data-i18n="bountPts">Points du Bount</label>
+        <select id="cfg-bount">
+          <option value="1">1 point (standard)</option>
+          <option value="2">2 points</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label data-i18n="missaPts">Points de la Missa</label>
+        <select id="cfg-missa">
+          <option value="1">1 point (standard)</option>
+          <option value="2">2 points</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label data-i18n="missaLast">Missa sur la dernière carte</label>
+        <select id="cfg-missa-last">
+          <option value="false">Non (interdite en fin de donne)</option>
+          <option value="true">Oui (autorisée)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label data-i18n="cardsScoring">Décompte des cartes</label>
+        <select id="cfg-cards-scoring">
+          <option value="beyond20">Au-delà de 20 (1 pt / carte > 20)</option>
+          <option value="majority">Majorité (1 pt au gagnant)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label data-i18n="manualAnnounce">Annonces Ronda / Tringa</label>
+        <select id="cfg-manual-announce">
+          <option value="false">Automatiques (par défaut)</option>
+          <option value="true">Manuelles (avec risque d'oubli !)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label data-i18n="animSpeed">Vitesse d'animation</label>
+        <select id="cfg-anim-speed">
+          <option value="450">Normale (450ms)</option>
+          <option value="250">Rapide (250ms)</option>
+          <option value="0">Instantanée (0ms)</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+      <button class="btn-secondary" id="btn-reset-settings" data-i18n="resetDefaults">Réinitialiser</button>
+      <button class="btn-primary" id="btn-save-settings" data-i18n="applyAndRestart">Appliquer & Nouvelle</button>
+    </div>
+  </div>
+</div>
+
+<!-- Stats Modal -->
+<div class="modal-overlay" id="modal-stats">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h2>📊 <span data-i18n="statsTitle">Statistiques</span></h2>
+      <button class="modal-close" id="btn-close-stats">✕</button>
+    </div>
+
+    <div class="stats-grid" id="stats-container"></div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px;">
+      <button class="btn-secondary" id="btn-reset-stats" style="color:var(--danger);" data-i18n="resetStats">Réinitialiser les stats</button>
+      <button class="btn-primary" id="btn-close-stats-btn" data-i18n="close">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<script src="ronda-engine.js"></script>
+<script src="ronda-sound.js"></script>
+
+<script>
+/* =====================================================================
+   RONDA WEB CLIENT — Animations, Bilingue (FR/Darija), Sauvegarde, Stats
+   ===================================================================== */
+'use strict';
+
+const $ = id => document.getElementById(id);
+const SYM = { copas: "♥", oros: "●", bastos: "♣", espadas: "♠" };
+const NM_FR = { 10: "Sota", 11: "Caballo", 12: "Rey" };
+const NM_AR = { 10: "الشيخ", 11: "العود", 12: "الملك" };
+
+// Dictionnaire Bilingue Français / الدارجة المغربية
+const I18N = {
+  fr: {
+    title: "Ronda",
+    newGame: "Nouvelle",
+    you: "Toi",
+    ai: "Adversaire",
+    dealer: "Donneur",
+    target: "Objectif",
+    round: "Manche",
+    deck: "Pioche",
+    cardsWon: "cartes",
+    announce: "Annoncer !",
+    rulesTitle: "Règles & Mode d'essai",
+    tabRules: "Règles complètes",
+    tabTrial: "Mode d'essai interactif",
+    settingsTitle: "Réglages de règles",
+    statsTitle: "Statistiques",
+    audioSettings: "Réglages Audio",
+    volume: "Volume général",
+    voiceLang: "Voix des répliques",
+    mute: "Muet",
+    unmute: "Son actif",
+    testSound: "Tester",
+    targetScore: "Score cible",
+    aiLevel: "Niveau de l'IA",
+    tringaPts: "Points de la Tringa",
+    rondaPts: "Points de la Ronda",
+    bountPts: "Points du Bount",
+    missaPts: "Points de la Missa",
+    missaLast: "Missa sur la dernière carte",
+    cardsScoring: "Décompte des cartes",
+    manualAnnounce: "Annonces Ronda / Tringa",
+    animSpeed: "Vitesse d'animation",
+    resetDefaults: "Réinitialiser",
+    applyAndRestart: "Appliquer & Nouvelle",
+    resetStats: "Effacer les statistiques",
+    close: "Fermer",
+    playAgain: "Rejouer",
+    resumeGame: "Partie en cours",
+    resume: "Reprendre",
+    tableCards: "Cartes sur la table",
+    yourHand: "Ta main (clique pour jouer)",
+    ruleCards: "1. Le jeu de 40 cartes espagnoles",
+    ruleCardsDesc: "Ronda se joue avec 40 cartes réparties en 4 enseignes : Copas (Coupes), Oros (Or/Dinar), Bastos (Bâtons), Espadas (Épées). Chaque enseigne comprend les cartes 1 à 7, puis 10 (Sota/Valet), 11 (Caballo/Cavalier) et 12 (Rey/Roi). <b>Il n'y a pas de 8 ni de 9 !</b> La suite saute directement de 7 à 10.",
+    ruleCapture: "2. La Prise (Capture) et les Suites",
+    ruleCaptureDesc: "Quand tu joues une carte de même valeur qu'une carte posée sur la table, tu ramasses cette carte ainsi que <b>toutes les cartes consécutives supérieures</b> présentes ! Par exemple, si la table contient 7, 10 et 11, poser un 7 ramasse le 7, le 10 et le 11 d'un coup.",
+    ruleAnnounces: "3. Les Annonces : Ronda et Tringa",
+    ruleAnnouncesDesc: "À chaque donne de 3 cartes :<br>• <b>Ronda (+1 pt)</b> : Avoir 2 cartes identiques en main.<br>• <b>Tringa (+5 pts)</b> : Avoir les 3 cartes identiques en main.<br>Si les deux joueurs ont une annonce, celle avec le rang le plus élevé gagne les points.",
+    ruleBonuses: "4. Les Bonus de Table : Bount et Missa",
+    ruleBonusesDesc: "• <b>Bount (+1 pt)</b> : Prendre immédiatement la carte que l'adversaire vient de poser.<br>• <b>Missa (+1 pt)</b> : Vider complètement la table lors d'une capture (table propre).",
+    ruleScoring: "5. Décompte de fin de manche",
+    ruleScoringDesc: "À la fin des 36 cartes jouées, les cartes restantes sur la table vont au dernier joueur ayant fait une prise. Chaque joueur compte ses cartes gagnées : chaque carte au-delà de 20 rapporte 1 point (ex: 24 cartes = +4 points). Le premier à atteindre le score cible (21 ou 41) gagne la partie !"
+  },
+  ar: {
+    title: "الروندا",
+    newGame: "طرح جديد",
+    you: "أنت",
+    ai: "الخصم",
+    dealer: "الموزع",
+    target: "الهدف",
+    round: "الشوط",
+    deck: "البيضة",
+    cardsWon: "ورقة",
+    announce: "إعلان !",
+    rulesTitle: "قواعد الروندا والتجربة",
+    tabRules: "القواعد الكاملة",
+    tabTrial: "وضع التجربة التفاعلي",
+    settingsTitle: "إعدادات القواعد",
+    statsTitle: "الإحصائيات",
+    audioSettings: "إعدادات الصوت",
+    volume: "مستوى الصوت",
+    voiceLang: "لغة الأصوات",
+    mute: "صامت",
+    unmute: "مفعل",
+    testSound: "تجربة الصوت",
+    targetScore: "نقط الفوز",
+    aiLevel: "مستوى الخصم",
+    tringaPts: "نقط الترينڭا",
+    rondaPts: "نقط الروندا",
+    bountPts: "نقط البونت",
+    missaPts: "نقط الميسا",
+    missaLast: "الميسا فالورقة الأخيرة",
+    cardsScoring: "حساب الأوراق",
+    manualAnnounce: "إعلان الروندا والترينڭا",
+    animSpeed: "سرعة التحريك",
+    resetDefaults: "إرجاع الأصل",
+    applyAndRestart: "تطبيق وطرح جديد",
+    resetStats: "مسح الإحصائيات",
+    close: "إغلاق",
+    playAgain: "طرح آخر",
+    resumeGame: "طرح باقي ماتسالاش",
+    resume: "استئناف",
+    tableCards: "الكوارط فوق الطابلة",
+    yourHand: "يدك (انقر باش تلعب)",
+    ruleCards: "1. كارطة من 40 ورقة إسبانية",
+    ruleCardsDesc: "الروندا كاتتلعب بـ 40 ورقة فـ 4 دالأنواع: الدينار (الذهب)، الكواص (الكؤوس)، الزرواطة (العصي)، والسيوف. الأرقام من 1 حتى لـ 7، ومن بعد كاين 10 (الشيخ)، 11 (العود)، 12 (الملك). <b>ماكاينش 8 و 9 !</b> التتابع كاينقز نيشان من 7 لـ 10.",
+    ruleCapture: "2. الماكلة والتتابع (السلسلة)",
+    ruleCaptureDesc: "فاش كاتحط كارطة بحال اللي فالطابلة، كاتاكلها وكاتاكل معاها <b>كاع الكوارط اللي تابعينها فالتتابع</b> ! مثلا إلا كانت فالطابلة 7 و 10 و 11، ولعبتي 7، كاتاكل 7 و 10 و 11 فضربة وحدة.",
+    ruleAnnounces: "3. الروندا والترينڭا",
+    ruleAnnouncesDesc: "فكل توزيغة دـ 3 الكوارط :<br>• <b>روندا (+1 نقطة)</b> : إلا جاوك جوج كوارط بحال بحال فاليد.<br>• <b>ترينڭا (+5 نقط)</b> : إلا جاوك 3 الكوارط بحال بحال فاليد.<br>إلا علنو بجوج، الكبيرة هي اللي كاتاكل.",
+    ruleBonuses: "4. البونت والميسا",
+    ruleBonusesDesc: "• <b>بونت (+1 نقطة)</b> : إلا كلتي الكارطة اللي يالاه حطها الخصم دابا نيت.<br>• <b>ميسا (+1 نقطة)</b> : إلا كلتي ومسحتي الطابلة كاملة ومابقات حتى كارطة.",
+    ruleScoring: "5. حساب الأوراق فالشوط",
+    ruleScoringDesc: "فاش كايساليو الكوارط، اللي دار آخر ماكلة كايدي اللي شاط فالطابلة. كل لاعب كايحسب كوارطو : كل ورقة فوق 20 كاتعطي نقطة (مثلا 24 ورقة = 4 دالنقط). أول واحد يوصل لـ 21 أو 41 كايربح الماتش !"
+  }
+};
+
+let currentLang = 'fr';
+try {
+  const savedLang = localStorage.getItem('ronda_ui_lang');
+  if (savedLang === 'ar' || savedLang === 'fr') currentLang = savedLang;
+} catch (e) {}
+
+function applyLanguage(lang) {
+  currentLang = lang;
+  document.documentElement.lang = lang;
+  document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+  try { localStorage.setItem('ronda_ui_lang', lang); } catch (e) {}
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    if (I18N[lang] && I18N[lang][k]) {
+      el.innerHTML = I18N[lang][k];
+    }
+  });
+
+  $("btn-lang").textContent = (lang === 'fr') ? "🇲🇦 دارجة" : "🇫🇷 Français";
+  updateSettingsFormUI();
+  updateLvBadge();
+}
+
+/* =====================================================================
+   CONFIG & PERSISTENCE
+   ===================================================================== */
+function loadConfig() {
+  const cfg = Object.assign({}, Ronda.DEFAULTS);
+  try {
+    const s = localStorage.getItem('ronda_cfg');
+    if (s) Object.assign(cfg, JSON.parse(s));
+    const speed = localStorage.getItem('ronda_anim_speed');
+    if (speed !== null) {
+      document.documentElement.style.setProperty('--anim-speed', speed + 'ms');
+    }
+  } catch (e) {}
+  return cfg;
+}
+
+function saveConfig(cfg) {
+  try { localStorage.setItem('ronda_cfg', JSON.stringify(cfg)); } catch (e) {}
+}
+
+let gameConfig = loadConfig();
+
+/* =====================================================================
+   STATISTICS
+   ===================================================================== */
+function loadStats() {
+  const def = {
+    totalGames: 0, playerWins: 0, aiWins: 0,
+    byLevel: {
+      debutant: { games: 0, playerWins: 0, aiWins: 0 },
+      habitue: { games: 0, playerWins: 0, aiWins: 0 },
+      maitre: { games: 0, playerWins: 0, aiWins: 0 }
+    },
+    missas: 0, bounts: 0, rondas: 0, tringas: 0, bestScore: 0
+  };
+  try {
+    const s = localStorage.getItem('ronda_stats');
+    if (s) return Object.assign(def, JSON.parse(s));
+  } catch (e) {}
+  return def;
+}
+
+function saveStats(st) {
+  try { localStorage.setItem('ronda_stats', JSON.stringify(st)); } catch (e) {}
+}
+
+let stats = loadStats();
+
+function recordStat(type, meta = {}) {
+  if (type === 'missa') stats.missas++;
+  else if (type === 'bount') stats.bounts++;
+  else if (type === 'combo') {
+    if (meta.kind === 'tringa') stats.tringas++; else stats.rondas++;
+  } else if (type === 'gameOver') {
+    stats.totalGames++;
+    const lv = gameConfig.difficulty || 'habitue';
+    if (!stats.byLevel[lv]) stats.byLevel[lv] = { games: 0, playerWins: 0, aiWins: 0 };
+    stats.byLevel[lv].games++;
+    if (meta.winner === 0) {
+      stats.playerWins++;
+      stats.byLevel[lv].playerWins++;
+    } else {
+      stats.aiWins++;
+      stats.byLevel[lv].aiWins++;
+    }
+    const myScore = meta.scores ? meta.scores[0] : 0;
+    if (myScore > stats.bestScore) stats.bestScore = myScore;
+  }
+  saveStats(stats);
+}
+
+/* =====================================================================
+   CARD RENDERING & ANIMATION HELPERS
+   ===================================================================== */
+function makeCardEl(id, extraClass = "") {
+  const c = Ronda.CARDS[id];
+  const e = document.createElement("div");
+  e.className = `card ${c.suit} ${extraClass}`.trim();
+  e.dataset.cardId = String(id);
+
+  const name = currentLang === 'ar' ? c.arName : (NM_FR[c.rank] || "");
+  e.innerHTML = `
+    <b>${c.rank}</b>
+    <i>${SYM[c.suit]}</i>
+    <span class="card-name">${name}</span>
+  `;
+  return e;
+}
+
+function makeCardBack() {
+  const e = document.createElement("div");
+  e.className = "card back";
+  return e;
+}
+
+// FLIP Animation from rectA to rectB
+function animateFlight(elA, elB, cardId, isBack = false) {
+  const speed = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--anim-speed')) || 0;
+  if (speed <= 0) return Promise.resolve();
+
+  return new Promise(resolve => {
+    const rectA = elA.getBoundingClientRect();
+    const rectB = elB.getBoundingClientRect();
+
+    const clone = isBack ? makeCardBack() : makeCardEl(cardId);
+    clone.classList.add('flying-card');
+    clone.style.left = rectA.left + 'px';
+    clone.style.top = rectA.top + 'px';
+    clone.style.width = rectA.width + 'px';
+    clone.style.height = rectA.height + 'px';
+    document.body.appendChild(clone);
+
+    // Force reflow
+    clone.getBoundingClientRect();
+
+    const dx = rectB.left - rectA.left;
+    const dy = rectB.top - rectA.top;
+    clone.style.transform = `translate(${dx}px, ${dy}px) scale(${rectB.width / rectA.width})`;
+
+    const done = () => {
+      clone.removeEventListener('transitionend', done);
+      if (clone.parentNode) clone.parentNode.removeChild(clone);
+      resolve();
+    };
+
+    clone.addEventListener('transitionend', done);
+    setTimeout(done, speed + 60);
+  });
+}
+
+function showEventBanner(text) {
+  const b = $("event-banner");
+  b.textContent = text;
+  b.classList.add("show");
+  setTimeout(() => b.classList.remove("show"), 1100);
+}
+
+function bouncePile(player) {
+  const pile = player === 0 ? $("pile-me") : $("pile-opp");
+  pile.classList.add("bounce");
+  setTimeout(() => pile.classList.remove("bounce"), 250);
+}
+
+/* =====================================================================
+   GAME CONTROLLER
+   ===================================================================== */
+let g = null;
+let busy = false;
+let log = [];
+let gen = 0;
+let lastPlayedCardId = null;
+
+function updateLvBadge() {
+  const lv = gameConfig.difficulty || 'habitue';
+  const names = {
+    debutant: currentLang === 'ar' ? 'مبتدئ' : 'Débutant',
+    habitue: currentLang === 'ar' ? 'حريف قهوة' : 'Habitué',
+    maitre: currentLang === 'ar' ? 'معلم الروندا' : 'Maître'
+  };
+  $("lv-badge").textContent = names[lv] || lv;
+}
+
+function start(cfg = null) {
+  busy = false;
+  gen++;
+  log = [];
+  lastPlayedCardId = null;
+  $("modal-end").style.display = "none";
+  $("modal-resume").style.display = "none";
+  $("announce-bar").style.display = "none";
+
+  if (cfg) gameConfig = Object.assign({}, gameConfig, cfg);
+  updateLvBadge();
+
+  g = new Ronda.Game(gameConfig);
+  saveGameState();
+  processEvents(g.drain(), false);
+  render();
+  checkAITurn();
+}
+
+function saveGameState() {
+  if (!g) return;
+  try {
+    if (g.over) {
+      localStorage.removeItem('ronda_saved_game');
+    } else {
+      localStorage.setItem('ronda_saved_game', JSON.stringify(g.serialize()));
+    }
+  } catch (e) {}
+}
+
+function render() {
+  if (!g) return;
+  const v = g.view(0);
+
+  // Scoreboard
+  $("score-me").textContent = v.scores[0];
+  $("score-opp").textContent = v.scores[1];
+  $("score-target").textContent = g.cfg.target;
+  $("round-num").textContent = v.round;
+
+  $("dealer-me").style.display = (g.dealer === 0) ? "inline-block" : "none";
+  $("dealer-opp").style.display = (g.dealer === 1) ? "inline-block" : "none";
+
+  // Opponent Hand (cards face-down)
+  const oppHand = $("opp-hand");
+  oppHand.innerHTML = "";
+  for (let i = 0; i < v.oppCount; i++) {
+    oppHand.appendChild(makeCardBack());
+  }
+
+  // Draw Deck
+  $("deck-left").textContent = v.deck;
+  if (v.deck === 0) {
+    $("deck-card").classList.add("empty");
+    $("deck-card").textContent = "∅";
+  } else {
+    $("deck-card").classList.remove("empty");
+    $("deck-card").textContent = "🎴";
+  }
+
+  // Won cards counters
+  $("count-me-won").textContent = v.captured[0];
+  $("count-opp-won").textContent = v.captured[1];
+
+  // Table Cards
+  const table = $("table-cards");
+  table.innerHTML = "";
+  const tableCardsObj = v.table.map(id => Ronda.CARDS[id]);
+
+  v.table.forEach(id => {
+    const isLast = (v.lastPlayed && v.lastPlayed.card === id) || (lastPlayedCardId === id);
+    const cEl = makeCardEl(id, isLast ? "last-played" : "");
+    if (isLast) {
+      const tag = document.createElement("div");
+      tag.className = "last-tag";
+      tag.textContent = currentLang === 'ar' ? "الأخيرة" : "Dernière";
+      cEl.appendChild(tag);
+    }
+    table.appendChild(cEl);
+  });
+
+  // Player Hand
+  const myHand = $("my-hand");
+  myHand.innerHTML = "";
+  v.hand.forEach(id => {
+    const cardObj = Ronda.CARDS[id];
+    const canCap = Ronda.resolve(tableCardsObj, cardObj).cap.length > 0;
+    const cEl = makeCardEl(id, "mine" + (canCap ? " can-capture" : ""));
+    cEl.onclick = () => humanPlay(id);
+    myHand.appendChild(cEl);
+  });
+
+  // Manual Announcement Bar
+  if (g.cfg.manualAnnounce && v.pendingCombo) {
+    const k = v.pendingCombo;
+    $("announce-bar").style.display = "flex";
+    $("announce-text").textContent = currentLang === 'ar'
+      ? `📢 عندك ${k.kind === 'tringa' ? 'ترينڭا' : 'روندا'} ديال ${k.rank} !`
+      : `📢 Tu as une ${k.kind === 'tringa' ? 'Tringa' : 'Ronda'} de ${k.rank} !`;
+    $("btn-announce").onclick = () => {
+      g.announce(0);
+      $("announce-bar").style.display = "none";
+      processEvents(g.drain(), false);
+      render();
+    };
+  } else {
+    $("announce-bar").style.display = "none";
+  }
+
+  // Turn status
+  if (g.over) {
+    $("turn-hint").textContent = currentLang === 'ar' ? "انتهى الماتش" : "Partie terminée";
+  } else if (g.turn === 0) {
+    $("turn-hint").textContent = currentLang === 'ar' ? "👉 دورك للعب" : "👉 À toi de jouer";
+  } else {
+    $("turn-hint").textContent = currentLang === 'ar' ? "⏳ الخصم كيفكر..." : "⏳ L'adversaire réfléchit...";
+  }
+
+  // Log ticker
+  $("log-ticker").innerHTML = log.slice(-2).join("<br>") || (currentLang === 'ar' ? "طابلة اللعب واجدة." : "Prépare-toi.");
+}
+
+async function processEvents(ev, animate = true) {
+  if (!ev || !ev.length) return;
+  RondaSound.handle(ev);
+
+  for (const e of ev) {
+    if (e.type === "play") {
+      const c = Ronda.CARDS[e.card];
+      lastPlayedCardId = e.card;
+      const cName = currentLang === 'ar' ? `${c.rank} ${c.arSuit}` : `${c.name} de ${c.suit}`;
+
+      if (e.player === 1) {
+        log.push(currentLang === 'ar'
+          ? `الخصم لعب ${cName}${e.captured.length ? " وكل " + e.captured.length + " ورقة" : ""}.`
+          : `L’adversaire joue ${cName}${e.captured.length ? " et prend " + e.captured.length + " carte(s)" : ""}.`);
+      } else {
+        log.push(currentLang === 'ar'
+          ? `لعبتي ${cName}${e.captured.length ? " وكلتي " + e.captured.length + " ورقة" : ""}.`
+          : `Tu joues ${cName}${e.captured.length ? " et prends " + e.captured.length + " carte(s)" : ""}.`);
+      }
+
+      if (animate && e.captured.length > 0) {
+        // Highlight captured cards on table
+        const tableEls = document.querySelectorAll("#table-cards .card");
+        tableEls.forEach(el => {
+          const cid = parseInt(el.dataset.cardId);
+          if (e.captured.includes(cid)) el.classList.add("capturing");
+        });
+
+        const speed = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--anim-speed')) || 0;
+        await new Promise(r => setTimeout(r, Math.max(300, speed)));
+
+        // Animate cards glide to captured pile
+        const pile = e.player === 0 ? $("pile-me") : $("pile-opp");
+        const targets = Array.from(document.querySelectorAll("#table-cards .card.capturing"));
+        for (const t of targets) {
+          animateFlight(t, pile, parseInt(t.dataset.cardId));
+        }
+        bouncePile(e.player);
+      }
+    }
+    else if (e.type === "combo") {
+      recordStat('combo', { kind: e.kind });
+      const who = e.player === 0 ? (currentLang === 'ar' ? "عندك" : "Tu as") : (currentLang === 'ar' ? "عند الخصم" : "L'adversaire a");
+      const name = e.kind === "tringa" ? (currentLang === 'ar' ? "ترينڭا" : "Tringa") : (currentLang === 'ar' ? "روندا" : "Ronda");
+      const text = `${name} ! +${e.pts}`;
+      showEventBanner(text);
+      log.push(currentLang === 'ar'
+        ? `${who} ${name} ديال ${e.rank} (+${e.pts} نقط) !`
+        : `${who} ${name} de ${e.rank} (+${e.pts} pts) !`);
+    }
+    else if (e.type === "comboMissed") {
+      log.push(currentLang === 'ar'
+        ? `⚠️ نسيتي ما علنتيش ${e.kind === 'tringa' ? 'الترينڭا' : 'الروندا'} ديالك !`
+        : `⚠️ Tu as oublié d'annoncer ta ${e.kind === 'tringa' ? 'Tringa' : 'Ronda'} !`);
+    }
+    else if (e.type === "missa") {
+      recordStat('missa');
+      const who = e.player === 0 ? (currentLang === 'ar' ? "درتي ميسا ! +1" : "Missa pour toi ! +1") : (currentLang === 'ar' ? "الخصم دار ميسا ! +1" : "Missa pour l'adversaire ! +1");
+      showEventBanner(currentLang === 'ar' ? "ميسا ! +1" : "MISSA ! +1");
+      log.push(who);
+    }
+    else if (e.type === "bount") {
+      recordStat('bount');
+      const who = e.player === 0 ? (currentLang === 'ar' ? "بونت ليك ! +1" : "Bount pour toi ! +1") : (currentLang === 'ar' ? "بونت للخصم ! +1" : "Bount pour l'adversaire ! +1");
+      showEventBanner(currentLang === 'ar' ? "بونت ! +1" : "BOUNT ! +1");
+      log.push(who);
+    }
+    else if (e.type === "sweep") {
+      log.push(currentLang === 'ar'
+        ? `الراماسا : ${e.cards.length} ورقة شاطت مشات للي دار آخر ماكلة.`
+        : `Ramasse : ${e.cards.length} carte(s) restantes vont au dernier preneur.`);
+      bouncePile(e.player);
+    }
+    else if (e.type === "roundEnd") {
+      log.push(currentLang === 'ar'
+        ? `نهاية الشوط : ${e.counts[0]}–${e.counts[1]} ورقة (+${e.pts[0]} / +${e.pts[1]} نقط).`
+        : `Fin de manche : ${e.counts[0]}–${e.counts[1]} cartes (+${e.pts[0]} / +${e.pts[1]} pts).`);
+    }
+    else if (e.type === "gameOver") {
+      recordStat('gameOver', { winner: e.winner, scores: e.scores });
+      saveGameState();
+      setTimeout(() => showGameOver(e), 800);
+    }
+  }
+
+  saveGameState();
+}
+
+function showGameOver(e) {
+  const isWin = e.winner === 0;
+  $("end-title").textContent = isWin
+    ? (currentLang === 'ar' ? "🎉 مبروك، ربحتي الماتش !" : "🎉 Bravo, tu as gagné !")
+    : (currentLang === 'ar' ? "هارد لك، الخصم اللي ربح…" : "L’adversaire a gagné…");
+
+  $("end-desc").textContent = currentLang === 'ar'
+    ? `النتيجة النهائية : أنت ${e.scores[0]} — الخصم ${e.scores[1]} (الهدف ${g.cfg.target})`
+    : `Score final : Toi ${e.scores[0]} — Adversaire ${e.scores[1]} (Objectif ${g.cfg.target})`;
+
+  $("end-scores").innerHTML = `
+    <div class="stat-card">
+      <div class="val">${e.scores[0]}</div>
+      <div class="lbl">${currentLang === 'ar' ? 'نقطك' : 'Tes points'}</div>
+    </div>
+    <div class="stat-card">
+      <div class="val">${e.scores[1]}</div>
+      <div class="lbl">${currentLang === 'ar' ? 'نقط الخصم' : 'Points adversaire'}</div>
+    </div>
+    <div class="stat-card">
+      <div class="val">${g.round}</div>
+      <div class="lbl">${currentLang === 'ar' ? 'الأشواط' : 'Manches jouées'}</div>
+    </div>
+  `;
+
+  $("modal-end").style.display = "flex";
+}
+
+async function humanPlay(id) {
+  if (!g || g.over || g.turn !== 0 || busy) return;
+  busy = true;
+
+  // Animate played card gliding from my hand to table
+  const cardEl = document.querySelector(`#my-hand .card[data-card-id="${id}"]`);
+  const table = $("table-cards");
+  if (cardEl && table) {
+    await animateFlight(cardEl, table, id, false);
+  }
+
+  const ev = g.play(id);
+  await processEvents(ev, true);
+  busy = false;
+  render();
+  checkAITurn();
+}
+
+function checkAITurn() {
+  if (!g || g.over || g.turn !== 1) return;
+  busy = true;
+  const myGen = gen;
+
+  const delay = Math.max(700, parseInt(getComputedStyle(document.documentElement).getPropertyValue('--anim-speed')) * 1.6);
+  setTimeout(async () => {
+    if (myGen !== gen || !g || g.over || g.turn !== 1) return;
+
+    const move = g.bestMove();
+    // Animate flight from opponent hand to table
+    const oppCards = document.querySelectorAll("#opp-hand .card");
+    const oppCardEl = oppCards[oppCards.length - 1];
+    const table = $("table-cards");
+
+    if (oppCardEl && table) {
+      await animateFlight(oppCardEl, table, move.id, false);
+    }
+
+    const ev = g.play(move.id);
+    await processEvents(ev, true);
+    busy = false;
+    render();
+    checkAITurn();
+  }, delay);
+}
+
+/* =====================================================================
+   INTERACTIVE TRIAL MODE (MODE D'ESSAI)
+   ===================================================================== */
+let trialCurrentScenario = 'suite';
+
+const TRIAL_SCENARIOS = {
+  suite: {
+    title: { fr: "La Suite 7 → 10, 11, 12", ar: "التتابع 7 ← 10، 11، 12" },
+    desc: {
+      fr: "Dans le jeu de cartes espagnol, <b>il n'y a pas de 8 ni de 9</b> ! La suite passe directement de 7 à 10. Si la table contient 7, 10, 11 et 3, poser un 7 ramasse le 7, puis le 10, puis le 11 !<br>👉 <b>Clique sur ton 7 d'Or pour tester la suite :</b>",
+      ar: "فالكارطة الإسبانية، <b>ماكاينش 8 و 9</b> ! التتابع كايمشي نيشان من 7 لـ 10. إلى كان فالطابلة 7، 10، 11 و 3، ولعبتي 7، كاتاكل 7، ومن بعد 10، ومن بعد 11 !<br>👉 <b>انقر على 7 دينار ديالك باش تجرب :</b>"
+    },
+    table: [
+      { id: 26, suit: 'bastos', rank: 7 },
+      { id: 7, suit: 'copas', rank: 10 },
+      { id: 38, suit: 'espadas', rank: 11 },
+      { id: 12, suit: 'oros', rank: 3 }
+    ],
+    hand: [
+      { id: 16, suit: 'oros', rank: 7, correct: true },
+      { id: 1, suit: 'copas', rank: 2, correct: false }
+    ],
+    action: (c) => {
+      if (c.rank === 7) {
+        return {
+          success: true,
+          cap: [26, 7, 38],
+          msg: {
+            fr: "🎉 Bravo ! Le 7 a pris le 7, puis a enchaîné sur le 10 et le 11 (suite consécutive). Le 3 reste sur la table.",
+            ar: "🎉 ممتاز ! الـ 7 كلات الـ 7، وتابعاتها 10 و 11. الـ 3 بقات فوق الطابلة حيت ماشي فالسلسلة."
+          }
+        };
+      }
+      return {
+        success: false,
+        msg: {
+          fr: "❌ Cette carte ne prend rien. Joue le 7 d'Or !",
+          ar: "❌ هاد الكارطة ماكاتاكل والو. العب 7 دالذهب !"
+        }
+      };
+    }
+  },
+  bount: {
+    title: { fr: "Le Bount (Prise immédiate)", ar: "البونت (ماكلة فورية)" },
+    desc: {
+      fr: "Le Bount se produit quand tu prends <b>la carte que l'adversaire vient tout juste de poser</b> (+1 point bonus) !<br>L'adversaire vient de poser un 4 de Bâtons (marqué 'Dernière').<br>👉 <b>Joue ton 4 de Coupe :</b>",
+      ar: "البونت كايوقع فاش كاتاكل <b>الكارطة اللي يالاه حطها الخصم دابا نيت</b> (+1 نقطة إضافية) !<br>الخصم يالاه حط 4 دالزرواطة (مكتوب عليها 'الأخيرة').<br>👉 <b>العب الـ 4 دالكواص ديالك :</b>"
+    },
+    table: [
+      { id: 23, suit: 'bastos', rank: 4, lastPlayed: true },
+      { id: 10, suit: 'oros', rank: 1 }
+    ],
+    hand: [
+      { id: 3, suit: 'copas', rank: 4, correct: true },
+      { id: 35, suit: 'espadas', rank: 6, correct: false }
+    ],
+    action: (c) => {
+      if (c.rank === 4) {
+        return {
+          success: true,
+          cap: [23],
+          bount: true,
+          msg: {
+            fr: "⚡ BOUNT ! Tu as pris directement la dernière carte posée par l'adversaire. Tu gagnes +1 point de Bount !",
+            ar: "⚡ بونت ! كلتي نيشان الكارطة اللي يالاه حطها الخصم. ربحتي +1 نقطة دالبونت !"
+          }
+        };
+      }
+      return {
+        success: false,
+        msg: {
+          fr: "❌ Joue ton 4 de Coupe pour répliquer sur le 4 adverse !",
+          ar: "❌ العب الـ 4 دالكواص باش تجيب البونت فـ 4 دالخصم !"
+        }
+      };
+    }
+  },
+  missa: {
+    title: { fr: "La Missa (Table vidée)", ar: "الميسا (مسح الطابلة)" },
+    desc: {
+      fr: "Faire Missa, c'est <b>vider entièrement la table</b> lors d'une prise (+1 pt). La table a seulement un 6 et un 7.<br>👉 <b>Joue ton 6 d'Épée :</b>",
+      ar: "الميسا هي فاش <b>كاتمسح الطابلة كاملة</b> فالماكلة (+1 نقطة). الطابلة فيها غير 6 و 7.<br>👉 <b>العب 6 دالسيوف ديالك :</b>"
+    },
+    table: [
+      { id: 15, suit: 'oros', rank: 6 },
+      { id: 6, suit: 'copas', rank: 7 }
+    ],
+    hand: [
+      { id: 35, suit: 'espadas', rank: 6, correct: true },
+      { id: 20, suit: 'bastos', rank: 1, correct: false }
+    ],
+    action: (c) => {
+      if (c.rank === 6) {
+        return {
+          success: true,
+          cap: [15, 6],
+          missa: true,
+          msg: {
+            fr: "🧹 MISSA ! Le 6 prend le 6 et enchaîne sur le 7. La table est complètement vide (+1 point) !",
+            ar: "🧹 ميسا ! الـ 6 كلات الـ 6 وتابعاتها 7. الطابلة تمسحات كاملة (+1 نقطة) !"
+          }
+        };
+      }
+      return {
+        success: false,
+        msg: {
+          fr: "❌ Joue le 6 pour enclencher la suite et vider la table !",
+          ar: "❌ العب 6 باش تدير السلسلة وتمسح الطابلة !"
+        }
+      };
+    }
+  },
+  ronda: {
+    title: { fr: "La Ronda (Paire en main)", ar: "الروندا (جوج كوارط بحال بحال)" },
+    desc: {
+      fr: "À la donne de 3 cartes, avoir <b>2 cartes de même valeur</b> est une Ronda (+1 point).<br>Ta main servie contient deux Cavaliers (11) !<br>👉 <b>Clique sur la paire pour annoncer ta Ronda :</b>",
+      ar: "فاش كايتفرقو 3 دالكوارط، إلا جاوك <b>2 كوارط من نفس القيمة</b> راها روندا (+1 نقطة).<br>يدك فيها جوج عواد (11) !<br>👉 <b>انقر على الـ 11 باش تعلن الروندا :</b>"
+    },
+    table: [
+      { id: 12, suit: 'oros', rank: 3 },
+      { id: 25, suit: 'bastos', rank: 6 }
+    ],
+    hand: [
+      { id: 8, suit: 'copas', rank: 11, correct: true },
+      { id: 18, suit: 'oros', rank: 11, correct: true },
+      { id: 31, suit: 'espadas', rank: 2, correct: false }
+    ],
+    action: (c) => {
+      if (c.rank === 11) {
+        return {
+          success: true,
+          combo: 'ronda',
+          msg: {
+            fr: "📢 RONDA de 11 ! Tu marques +1 point au début de la manche. Si l'adversaire avait aussi une Ronda, la plus forte valeur l'emporterait.",
+            ar: "📢 روندا ديال 11 ! كاتاخد +1 نقطة. إلا كان الخصم حتى هو عندو روندا، الكبيرة كاتربح."
+          }
+        };
+      }
+      return {
+        success: false,
+        msg: {
+          fr: "❌ Clique sur l'un des deux Cavaliers (11) pour annoncer la Ronda !",
+          ar: "❌ انقر على واحد من العواد (11) باش تعلن الروندا !"
+        }
+      };
+    }
+  },
+  tringa: {
+    title: { fr: "La Tringa (Brelan en main)", ar: "الترينڭا (3 كوارط متطابقة)" },
+    desc: {
+      fr: "Avoir les <b>3 cartes de même valeur</b> servies en main est une Tringa (+5 points) ! Elle bat n'importe quelle Ronda.<br>👉 <b>Clique sur tes As (1) pour déclarer la Tringa :</b>",
+      ar: "إلا جاوك <b>3 الكوارط من نفس القيمة</b> فاليد راها ترينڭا (+5 نقط) ! كاتغلب أي روندا.<br>👉 <b>انقر على الواحد (1) باش تعلن الترينڭا :</b>"
+    },
+    table: [
+      { id: 22, suit: 'bastos', rank: 3 }
+    ],
+    hand: [
+      { id: 0, suit: 'copas', rank: 1, correct: true },
+      { id: 10, suit: 'oros', rank: 1, correct: true },
+      { id: 30, suit: 'espadas', rank: 1, correct: true }
+    ],
+    action: (c) => {
+      return {
+        success: true,
+        combo: 'tringa',
+        msg: {
+          fr: "🌟 TRINGA ! 3 cartes identiques ! Tu marques +5 points d'un coup !",
+          ar: "🌟 ترينڭا ! 3 دالكوارط بحال بحال ! كاتربح +5 دالنقط فضربة وحدة !"
+        }
+      };
+    }
+  }
+};
+
+function loadTrialScenario(key) {
+  trialCurrentScenario = key;
+  const sc = TRIAL_SCENARIOS[key];
+  if (!sc) return;
+
+  $("trial-instructions").innerHTML = sc.desc[currentLang] || sc.desc.fr;
+  $("trial-feedback").textContent = "";
+
+  // Render Table
+  const tRow = $("trial-table-row");
+  tRow.innerHTML = "";
+  sc.table.forEach(c => {
+    const el = makeCardEl(c.id, c.lastPlayed ? "last-played" : "");
+    if (c.lastPlayed) {
+      const tag = document.createElement("div");
+      tag.className = "last-tag";
+      tag.textContent = currentLang === 'ar' ? "الأخيرة" : "Dernière";
+      el.appendChild(tag);
+    }
+    tRow.appendChild(el);
+  });
+
+  // Render Hand
+  const hRow = $("trial-hand-row");
+  hRow.innerHTML = "";
+  sc.hand.forEach(c => {
+    const el = makeCardEl(c.id, "mine");
+    el.onclick = () => {
+      const res = sc.action(c);
+      $("trial-feedback").innerHTML = res.msg[currentLang] || res.msg.fr;
+      if (res.success) {
+        if (res.bount) {
+          RondaSound.say('bount');
+          showEventBanner("BOUNT ! +1");
+        } else if (res.missa) {
+          RondaSound.say('missa');
+          showEventBanner("MISSA ! +1");
+        } else if (res.combo) {
+          RondaSound.say(res.combo);
+          showEventBanner(res.combo === 'tringa' ? "TRINGA ! +5" : "RONDA ! +1");
+        } else {
+          RondaSound.playSFX('capture');
+        }
+
+        if (res.cap) {
+          const targets = document.querySelectorAll("#trial-table-row .card");
+          targets.forEach(t => {
+            const cid = parseInt(t.dataset.cardId);
+            if (res.cap.includes(cid)) t.classList.add("capturing");
+          });
+        }
+      }
+    };
+    hRow.appendChild(el);
+  });
+}
+
+/* =====================================================================
+   SETTINGS & STATS MODALS UI
+   ===================================================================== */
+function updateSettingsFormUI() {
+  $("cfg-target").value = String(gameConfig.target || 21);
+  $("cfg-difficulty").value = gameConfig.difficulty || 'habitue';
+  $("cfg-tringa").value = String(gameConfig.tringaPts || 5);
+  $("cfg-ronda").value = String(gameConfig.rondaPts || 1);
+  $("cfg-bount").value = String(gameConfig.bountPts || 1);
+  $("cfg-missa").value = String(gameConfig.missaPts || 1);
+  $("cfg-missa-last").value = String(!!gameConfig.missaOnLastPlay);
+  $("cfg-cards-scoring").value = gameConfig.cardsScoring || 'beyond20';
+  $("cfg-manual-announce").value = String(!!gameConfig.manualAnnounce);
+}
+
+function renderStatsUI() {
+  const c = $("stats-container");
+  const winRate = stats.totalGames > 0 ? Math.round((stats.playerWins / stats.totalGames) * 100) : 0;
+
+  const labels = {
+    games: currentLang === 'ar' ? 'طروحة ملعوبة' : 'Parties jouées',
+    wins: currentLang === 'ar' ? 'طروحة مربوحة' : 'Victoires joueur',
+    aiWins: currentLang === 'ar' ? 'ربحات الخصم' : 'Victoires IA',
+    winRate: currentLang === 'ar' ? 'نسبة الفوز' : 'Taux de victoire',
+    missas: currentLang === 'ar' ? 'عدد الميسا' : 'Total Missas',
+    bounts: currentLang === 'ar' ? 'عدد البونت' : 'Total Bounts',
+    rondas: currentLang === 'ar' ? 'عدد الروندا' : 'Total Rondas',
+    tringas: currentLang === 'ar' ? 'عدد الترينڭا' : 'Total Tringas',
+    bestScore: currentLang === 'ar' ? 'أعلى سكور' : 'Meilleur score'
+  };
+
+  c.innerHTML = `
+    <div class="stat-card">
+      <div class="val">${stats.totalGames}</div>
+      <div class="lbl">${labels.games}</div>
+    </div>
+    <div class="stat-card">
+      <div class="val">${stats.playerWins}</div>
+      <div class="lbl">${labels.wins}</div>
+    </div>
+    <div class="stat-card">
+      <div class="val">${stats.aiWins}</div>
+      <div class="lbl">${labels.aiWins}</div>
+    </div>
+    <div class="stat-card">
+      <div class="val">${winRate}%</div>
+      <div class="lbl">${labels.winRate}</div>
+    </div>
+    <div class="stat-card">
+      <div class="val">${stats.missas}</div>
+      <div class="lbl">${labels.missas}</div>
+    </div>
+    <div class="stat-card">
+      <div class="val">${stats.bounts}</div>
+      <div class="lbl">${labels.bounts}</div>
+    </div>
+    <div class="stat-card">
+      <div class="val">${stats.rondas}</div>
+      <div class="lbl">${labels.rondas}</div>
+    </div>
+    <div class="stat-card">
+      <div class="val">${stats.tringas}</div>
+      <div class="lbl">${labels.tringas}</div>
+    </div>
+    <div class="stat-card">
+      <div class="val">${stats.bestScore}</div>
+      <div class="lbl">${labels.bestScore}</div>
+    </div>
+  `;
+}
+
+/* =====================================================================
+   AUDIO UI SYNC
+   ===================================================================== */
+function updateAudioUI(state) {
+  const icon = state.muted ? "🔇" : (state.volume > 0.5 ? "🔊" : (state.volume > 0 ? "🔉" : "🔇"));
+  $("btn-sound").textContent = icon;
+  $("vol-slider").value = state.volume;
+  $("voice-lang-select").value = state.voiceLang || 'darija';
+  $("btn-toggle-mute").textContent = state.muted ? (currentLang === 'ar' ? "إلغاء الصامت" : "Son actif") : (currentLang === 'ar' ? "صامت" : "Muet");
+}
+
+/* =====================================================================
+   EVENT LISTENERS & INITIALIZATION
+   ===================================================================== */
+document.addEventListener("DOMContentLoaded", () => {
+  applyLanguage(currentLang);
+
+  // Audio bindings
+  RondaSound.onChange(updateAudioUI);
+  updateAudioUI({
+    muted: RondaSound.isMuted(),
+    volume: RondaSound.getVolume(),
+    voiceLang: RondaSound.getVoiceLanguage()
+  });
+
+  document.addEventListener("pointerdown", () => RondaSound.unlock(), { once: true });
+
+  $("btn-sound").onclick = (e) => {
+    e.stopPropagation();
+    const p = $("audio-panel");
+    p.style.display = (p.style.display === "flex") ? "none" : "flex";
+  };
+  $("btn-close-audio").onclick = () => $("audio-panel").style.display = "none";
+
+  $("vol-slider").oninput = (e) => {
+    RondaSound.setVolume(e.target.value);
+  };
+  $("voice-lang-select").onchange = (e) => {
+    RondaSound.setVoiceLanguage(e.target.value);
+  };
+  $("btn-toggle-mute").onclick = () => {
+    RondaSound.toggleMute();
+  };
+  $("btn-test-sound").onclick = () => {
+    RondaSound.playSFX('slap');
+    setTimeout(() => RondaSound.say('ronda'), 150);
+  };
+
+  // Close audio panel on click outside
+  document.addEventListener("click", (e) => {
+    const p = $("audio-panel");
+    if (p.style.display === "flex" && !p.contains(e.target) && e.target !== $("btn-sound")) {
+      p.style.display = "none";
+    }
+  });
+
+  // Language switcher
+  $("btn-lang").onclick = () => {
+    applyLanguage(currentLang === 'fr' ? 'ar' : 'fr');
+    if ($("modal-rules").style.display === "flex") {
+      loadTrialScenario(trialCurrentScenario);
+    }
+  };
+
+  // New Game
+  $("btn-new").onclick = () => start();
+  $("btn-restart").onclick = () => start();
+
+  // Rules Modal
+  $("btn-rules").onclick = () => {
+    $("modal-rules").style.display = "flex";
+    loadTrialScenario('suite');
+  };
+  $("btn-close-rules").onclick = () => $("modal-rules").style.display = "none";
+
+  $("tab-rules-txt").onclick = () => {
+    $("tab-rules-txt").classList.add("active");
+    $("tab-rules-trial").classList.remove("active");
+    $("panel-rules-txt").style.display = "flex";
+    $("panel-rules-trial").style.display = "none";
+  };
+
+  $("tab-rules-trial").onclick = () => {
+    $("tab-rules-trial").classList.add("active");
+    $("tab-rules-txt").classList.remove("active");
+    $("panel-rules-txt").style.display = "none";
+    $("panel-rules-trial").style.display = "flex";
+    loadTrialScenario(trialCurrentScenario);
+  };
+
+  $("trial-step-suite").onclick = () => loadTrialScenario('suite');
+  $("trial-step-bount").onclick = () => loadTrialScenario('bount');
+  $("trial-step-missa").onclick = () => loadTrialScenario('missa');
+  $("trial-step-ronda").onclick = () => loadTrialScenario('ronda');
+  $("trial-step-tringa").onclick = () => loadTrialScenario('tringa');
+
+  // Settings Modal
+  $("btn-settings").onclick = () => {
+    updateSettingsFormUI();
+    $("modal-settings").style.display = "flex";
+  };
+  $("btn-close-settings").onclick = () => $("modal-settings").style.display = "none";
+
+  $("btn-reset-settings").onclick = () => {
+    gameConfig = Object.assign({}, Ronda.DEFAULTS);
+    saveConfig(gameConfig);
+    updateSettingsFormUI();
+  };
+
+  $("btn-save-settings").onclick = () => {
+    gameConfig.target = parseInt($("cfg-target").value) || 21;
+    gameConfig.difficulty = $("cfg-difficulty").value;
+    gameConfig.tringaPts = parseInt($("cfg-tringa").value) || 5;
+    gameConfig.rondaPts = parseInt($("cfg-ronda").value) || 1;
+    gameConfig.bountPts = parseInt($("cfg-bount").value) || 1;
+    gameConfig.missaPts = parseInt($("cfg-missa").value) || 1;
+    gameConfig.missaOnLastPlay = $("cfg-missa-last").value === "true";
+    gameConfig.cardsScoring = $("cfg-cards-scoring").value;
+    gameConfig.manualAnnounce = $("cfg-manual-announce").value === "true";
+
+    const animSpeed = $("cfg-anim-speed").value;
+    document.documentElement.style.setProperty('--anim-speed', animSpeed + 'ms');
+    try { localStorage.setItem('ronda_anim_speed', animSpeed); } catch (e) {}
+
+    saveConfig(gameConfig);
+    $("modal-settings").style.display = "none";
+    start();
+  };
+
+  // Stats Modal
+  $("btn-stats").onclick = () => {
+    renderStatsUI();
+    $("modal-stats").style.display = "flex";
+  };
+  $("btn-close-stats").onclick = () => $("modal-stats").style.display = "none";
+  $("btn-close-stats-btn").onclick = () => $("modal-stats").style.display = "none";
+
+  $("btn-reset-stats").onclick = () => {
+    if (confirm(currentLang === 'ar' ? 'واش متأكد باغي تمسح كاع الإحصائيات ؟' : 'Voulez-vous vraiment réinitialiser toutes les statistiques ?')) {
+      stats = {
+        totalGames: 0, playerWins: 0, aiWins: 0,
+        byLevel: { debutant: { games:0, playerWins:0, aiWins:0 }, habitue: { games:0, playerWins:0, aiWins:0 }, maitre: { games:0, playerWins:0, aiWins:0 } },
+        missas: 0, bounts: 0, rondas: 0, tringas: 0, bestScore: 0
+      };
+      saveStats(stats);
+      renderStatsUI();
+    }
+  };
+
+  // Check saved game resume
+  try {
+    const savedStr = localStorage.getItem('ronda_saved_game');
+    if (savedStr) {
+      const saved = JSON.parse(savedStr);
+      if (saved && !saved.over) {
+        $("resume-desc").textContent = currentLang === 'ar'
+          ? `كاين ماتش باقي ملعوب : الشوط ${saved.round}، السكور ${saved.scores[0]} — ${saved.scores[1]}`
+          : `Une partie est en cours : Manche ${saved.round}, Score ${saved.scores[0]} — ${saved.scores[1]}`;
+        $("modal-resume").style.display = "flex";
+
+        $("btn-do-resume").onclick = () => {
+          $("modal-resume").style.display = "none";
+          try {
+            g = Ronda.Game.restore(saved);
+            render();
+            checkAITurn();
+          } catch (err) {
+            start();
+          }
+        };
+
+        $("btn-do-discard").onclick = () => {
+          $("modal-resume").style.display = "none";
+          start();
+        };
+        return;
+      }
+    }
+  } catch (e) {}
+
+  // Otherwise start fresh
+  start();
+});
+
+// PWA Service Worker Registration
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').then((reg) => {
+      console.log('Ronda PWA Service Worker registered:', reg.scope);
+    }).catch((err) => {
+      console.log('SW registration failed:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="felt" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#187858"/>
+      <stop offset="70%" stop-color="#0e4a36"/>
+      <stop offset="100%" stop-color="#082e22"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffe066"/>
+      <stop offset="50%" stop-color="#f5c542"/>
+      <stop offset="100%" stop-color="#b98a00"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="2" dy="8" stdDeviation="8" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Background felt tile -->
+  <rect width="512" height="512" rx="110" fill="url(#felt)"/>
+  <rect x="16" y="16" width="480" height="480" rx="96" fill="none" stroke="#f5c542" stroke-width="4" stroke-opacity="0.35" stroke-dasharray="12 6"/>
+
+  <!-- Cards angled -->
+  <g filter="url(#shadow)">
+    <!-- Card 1: 7 d'Épée -->
+    <g transform="translate(190, 240) rotate(-16)">
+      <rect x="-70" y="-105" width="140" height="210" rx="16" fill="#fffdf6" stroke="#e5dfd0" stroke-width="3"/>
+      <text x="-48" y="-65" font-family="Georgia, serif" font-size="36" font-weight="bold" fill="#1f4e9c">7</text>
+      <text x="0" y="20" font-family="Georgia, serif" font-size="64" text-anchor="middle" fill="#1f4e9c">♠</text>
+      <text x="0" y="65" font-family="system-ui, sans-serif" font-size="14" text-anchor="middle" fill="#555">ESPADAS</text>
+    </g>
+
+    <!-- Card 2: 1 d'Or (As de Oros) -->
+    <g transform="translate(315, 255) rotate(14)">
+      <rect x="-70" y="-105" width="140" height="210" rx="16" fill="#fffdf6" stroke="#e5dfd0" stroke-width="3"/>
+      <text x="-48" y="-65" font-family="Georgia, serif" font-size="36" font-weight="bold" fill="#b98a00">1</text>
+      <circle cx="0" cy="10" r="34" fill="url(#gold)" stroke="#946f00" stroke-width="3"/>
+      <circle cx="0" cy="10" r="24" fill="none" stroke="#fff" stroke-width="2" stroke-opacity="0.8" stroke-dasharray="4 2"/>
+      <text x="0" y="18" font-family="Georgia, serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#5c4500">●</text>
+      <text x="0" y="68" font-family="system-ui, sans-serif" font-size="14" text-anchor="middle" fill="#7a5c00">OROS</text>
+    </g>
+  </g>
+
+  <!-- Title Badge -->
+  <g filter="url(#shadow)" transform="translate(256, 420)">
+    <rect x="-140" y="-32" width="280" height="64" rx="32" fill="url(#gold)"/>
+    <text x="0" y="10" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="900" text-anchor="middle" fill="#2b1f00" letter-spacing="2">RONDA</text>
+  </g>
+</svg>
