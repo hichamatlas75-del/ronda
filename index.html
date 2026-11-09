@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Ronda - Jeu de Cartes Marocain</title>
-<meta name="description" content="Jeu de cartes traditionnel marocain Ronda avec animations fluides, sons authentiques en Darija et mode hors-ligne.">
+<title>Ronda - Jeu de Cartes Marocain Authentique</title>
+<meta name="description" content="Jeu de cartes traditionnel marocain Ronda avec les véritables cartes espagnoles, sons authentiques en Darija et mode hors-ligne.">
 <meta name="theme-color" content="#14664a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -23,8 +23,6 @@
   --felt-border: #1d7e5d;
   --fg: #f5f2e9;
   --fg-dim: #cbd5cb;
-  --card-bg: #fffdf7;
-  --card-border: #e6dfcd;
   --ink: #1a1a1a;
   --accent: #f5c542;
   --accent-glow: rgba(245, 197, 66, 0.55);
@@ -34,9 +32,9 @@
   --danger: #e04848;
   --success: #3ecf8e;
   --modal-bg: rgba(10, 24, 18, 0.88);
-  --card-w: clamp(52px, 15vw, 84px);
+  --card-w: clamp(54px, 15.5vw, 86px);
   --card-h: calc(var(--card-w) * 1.42);
-  --card-radius: 9px;
+  --card-radius: 7px;
   --anim-speed: 450ms;
 }
 
@@ -263,11 +261,16 @@ button, select {
 .mini-card-stack {
   width: 20px;
   height: 28px;
-  border-radius: 4px;
-  background: repeating-linear-gradient(45deg, #7a1f2b, #7a1f2b 3px, #5a1320 3px, #5a1320 6px);
-  border: 1.5px solid #fff;
+  border-radius: 3px;
   box-shadow: 2px 2px 0 rgba(0,0,0,0.5);
-  position: relative;
+  overflow: hidden;
+}
+
+.mini-card-stack img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 /* Cards Rows */
@@ -306,21 +309,30 @@ button, select {
   width: var(--card-w);
   height: var(--card-h);
   border-radius: var(--card-radius);
-  background: repeating-linear-gradient(45deg, #7a1f2b, #7a1f2b 6px, #5a1320 6px, #5a1320 12px);
-  border: 2.5px solid #fffdf7;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.45);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.45);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
-  color: #fff;
   position: relative;
+  overflow: hidden;
+  background: #fff;
+}
+
+#deck-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
 }
 
 #deck-card.empty {
   background: rgba(255,255,255,0.06);
   border: 2px dashed rgba(255,255,255,0.2);
   color: transparent;
+}
+
+#deck-card.empty img {
+  display: none;
 }
 
 .deck-count {
@@ -340,57 +352,29 @@ button, select {
   padding: 4px;
 }
 
-/* Playing Card Component */
+/* Authentic Playing Card Component */
 .card {
   width: var(--card-w);
   height: var(--card-h);
-  background: var(--card-bg);
-  color: var(--ink);
+  background: #fff;
   border-radius: var(--card-radius);
-  border: 1px solid var(--card-border);
-  box-shadow: 0 3px 8px rgba(0,0,0,0.35);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  padding: 4px 2px;
-  font-family: Georgia, "Times New Roman", serif;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.4);
   position: relative;
   user-select: none;
   transition: transform 0.14s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.14s ease, outline 0.14s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
 }
 
-.card b {
-  font-size: clamp(16px, 4.5vw, 24px);
-  line-height: 1;
-  align-self: flex-start;
-  margin-inline-start: 4px;
-}
-
-.card i {
-  font-style: normal;
-  font-size: clamp(20px, 5.5vw, 32px);
-  line-height: 1;
-}
-
-.card .card-name {
-  font-family: system-ui, sans-serif;
-  font-size: 9px;
-  min-height: 11px;
-  text-align: center;
-  opacity: 0.85;
-}
-
-/* Suits Colors */
-.copas { color: #c0262d; }
-.oros { color: #b98a00; }
-.bastos { color: #1e7c3a; }
-.espadas { color: #1d4fa1; }
-
-/* Card Back */
-.card.back {
-  background: repeating-linear-gradient(45deg, #7a1f2b, #7a1f2b 6px, #5a1320 6px, #5a1320 12px);
-  border: 2.5px solid var(--card-bg);
+.card img {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  border-radius: var(--card-radius);
+  display: block;
+  pointer-events: none;
 }
 
 /* Interactive Card states */
@@ -399,21 +383,22 @@ button, select {
 }
 
 .mine:hover, .mine:focus-visible {
-  transform: translateY(-10px) scale(1.04);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.5);
-  z-index: 2;
+  transform: translateY(-10px) scale(1.05);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.6);
+  z-index: 5;
 }
 
 .mine.can-capture {
   outline: 3px solid #38ef7d;
-  box-shadow: 0 0 12px rgba(56, 239, 125, 0.5);
+  box-shadow: 0 0 14px rgba(56, 239, 125, 0.65);
 }
 
 /* Last Played Card Highlight */
 .last-played {
-  outline: 3px solid var(--accent);
-  box-shadow: 0 0 16px var(--accent-glow);
+  outline: 3.5px solid var(--accent);
+  box-shadow: 0 0 18px var(--accent-glow);
   animation: pulseLast 1.8s infinite;
+  z-index: 3;
 }
 
 .last-tag {
@@ -426,25 +411,25 @@ button, select {
   font-family: system-ui, sans-serif;
   font-size: 9px;
   font-weight: 800;
-  padding: 1px 6px;
+  padding: 1px 7px;
   border-radius: 8px;
   white-space: nowrap;
   box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-  z-index: 3;
+  z-index: 4;
 }
 
 @keyframes pulseLast {
   0% { box-shadow: 0 0 8px var(--accent-glow); }
-  50% { box-shadow: 0 0 20px rgba(245, 197, 66, 0.9); }
+  50% { box-shadow: 0 0 22px rgba(245, 197, 66, 0.95); }
   100% { box-shadow: 0 0 8px var(--accent-glow); }
 }
 
 /* Highlight capturing cards */
 .capturing {
-  outline: 3.5px solid #22c55e !important;
+  outline: 4px solid #22c55e !important;
   transform: scale(1.08) !important;
-  box-shadow: 0 0 20px rgba(34, 197, 94, 0.8) !important;
-  z-index: 4;
+  box-shadow: 0 0 24px rgba(34, 197, 94, 0.85) !important;
+  z-index: 6;
 }
 
 /* Flying animated clone */
@@ -691,18 +676,36 @@ button, select {
   border-radius: 4px;
 }
 
-.trial-arena {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
-}
-
 .trial-cards-row {
   display: flex;
   justify-content: center;
   gap: 8px;
   min-height: calc(var(--card-h) * 0.9);
+}
+
+/* Deck Showcase in Rules */
+.cards-showcase {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 8px;
+  border-radius: 10px;
+  margin-top: 6px;
+}
+
+.showcase-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.72rem;
+}
+
+.showcase-item img {
+  width: 100%;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 /* Stats Cards */
@@ -826,7 +829,7 @@ button, select {
         <span data-i18n="ai">Adversaire</span>
       </div>
       <div class="won-pile" id="pile-opp">
-        <div class="mini-card-stack"></div>
+        <div class="mini-card-stack"><img src="cards/back.png" alt="Pile"></div>
         <span><b id="count-opp-won">0</b> <small data-i18n="cardsWon">cartes</small></span>
       </div>
     </div>
@@ -838,7 +841,7 @@ button, select {
     <div id="table-area">
       <!-- Draw Deck -->
       <div id="deck-slot">
-        <div id="deck-card">🎴</div>
+        <div id="deck-card"><img src="cards/back.png" alt="Pioche"></div>
         <div class="deck-count"><span data-i18n="deck">Pioche</span>: <span id="deck-left">30</span></div>
       </div>
 
@@ -862,7 +865,7 @@ button, select {
         <span data-i18n="you">Toi</span>
       </div>
       <div class="won-pile" id="pile-me">
-        <div class="mini-card-stack"></div>
+        <div class="mini-card-stack"><img src="cards/back.png" alt="Pile"></div>
         <span><b id="count-me-won">0</b> <small data-i18n="cardsWon">cartes</small></span>
       </div>
     </div>
@@ -915,8 +918,16 @@ button, select {
     <!-- Tab 1: Rules text -->
     <div id="panel-rules-txt" style="display:flex; flex-direction:column; gap:12px; font-size:0.92rem; line-height:1.5;">
       <div>
-        <h3 style="color:var(--accent); margin:4px 0;" data-i18n="ruleCards">1. Le jeu de 40 cartes espagnoles</h3>
-        <p data-i18n="ruleCardsDesc">Ronda se joue avec 40 cartes réparties en 4 enseignes : Copas (Coupes), Oros (Or/Dinar), Bastos (Bâtons), Espadas (Épées). Chaque enseigne comprend les cartes 1 à 7, puis 10 (Sota/Valet), 11 (Caballo/Cavalier) et 12 (Rey/Roi). <b>Il n'y a pas de 8 ni de 9 !</b> La suite saute directement de 7 à 10.</p>
+        <h3 style="color:var(--accent); margin:4px 0;" data-i18n="ruleCards">1. Le jeu de 40 cartes espagnoles authentiques</h3>
+        <p data-i18n="ruleCardsDesc">Ronda se joue avec les 40 cartes espagnoles traditionnelles réparties en 4 enseignes : Copas (الكواص), Oros (الدينار), Bastos (الزرواطة), Espadas (السيوف). Chaque enseigne comprend les cartes 1 à 7, puis 10 (Sota/الشيخ), 11 (Caballo/العود) et 12 (Rey/الملك). <b>Il n'y a pas de 8 ni de 9 !</b> La suite saute directement de 7 à 10.</p>
+        
+        <div class="cards-showcase">
+          <div class="showcase-item"><img src="cards/10.png" alt="1 Oros"><span>1 Oros</span></div>
+          <div class="showcase-item"><img src="cards/16.png" alt="7 Oros"><span>7 Oros</span></div>
+          <div class="showcase-item"><img src="cards/17.png" alt="Sota Oros"><span>10 Sota</span></div>
+          <div class="showcase-item"><img src="cards/18.png" alt="Caballo Oros"><span>11 Caballo</span></div>
+          <div class="showcase-item"><img src="cards/19.png" alt="Rey Oros"><span>12 Rey</span></div>
+        </div>
       </div>
 
       <div>
@@ -1091,7 +1102,7 @@ button, select {
 
 <script>
 /* =====================================================================
-   RONDA WEB CLIENT — Animations, Bilingue (FR/Darija), Sauvegarde, Stats
+   RONDA WEB CLIENT — Cartes authentiques de la photo, bilingue, animations
    ===================================================================== */
 'use strict';
 
@@ -1143,8 +1154,8 @@ const I18N = {
     resume: "Reprendre",
     tableCards: "Cartes sur la table",
     yourHand: "Ta main (clique pour jouer)",
-    ruleCards: "1. Le jeu de 40 cartes espagnoles",
-    ruleCardsDesc: "Ronda se joue avec 40 cartes réparties en 4 enseignes : Copas (Coupes), Oros (Or/Dinar), Bastos (Bâtons), Espadas (Épées). Chaque enseigne comprend les cartes 1 à 7, puis 10 (Sota/Valet), 11 (Caballo/Cavalier) et 12 (Rey/Roi). <b>Il n'y a pas de 8 ni de 9 !</b> La suite saute directement de 7 à 10.",
+    ruleCards: "1. Le jeu de 40 cartes espagnoles authentiques",
+    ruleCardsDesc: "Ronda se joue avec les 40 cartes espagnoles traditionnelles réparties en 4 enseignes : Copas (الكواص), Oros (الدينار), Bastos (الزرواطة), Espadas (السيوف). Chaque enseigne comprend les cartes 1 à 7, puis 10 (Sota/الشيخ), 11 (Caballo/العود) et 12 (Rey/الملك). <b>Il n'y a pas de 8 ni de 9 !</b> La suite saute directement de 7 à 10.",
     ruleCapture: "2. La Prise (Capture) et les Suites",
     ruleCaptureDesc: "Quand tu joues une carte de même valeur qu'une carte posée sur la table, tu ramasses cette carte ainsi que <b>toutes les cartes consécutives supérieures</b> présentes ! Par exemple, si la table contient 7, 10 et 11, poser un 7 ramasse le 7, le 10 et le 11 d'un coup.",
     ruleAnnounces: "3. Les Annonces : Ronda et Tringa",
@@ -1195,8 +1206,8 @@ const I18N = {
     resume: "استئناف",
     tableCards: "الكوارط فوق الطابلة",
     yourHand: "يدك (انقر باش تلعب)",
-    ruleCards: "1. كارطة من 40 ورقة إسبانية",
-    ruleCardsDesc: "الروندا كاتتلعب بـ 40 ورقة فـ 4 دالأنواع: الدينار (الذهب)، الكواص (الكؤوس)، الزرواطة (العصي)، والسيوف. الأرقام من 1 حتى لـ 7، ومن بعد كاين 10 (الشيخ)، 11 (العود)، 12 (الملك). <b>ماكاينش 8 و 9 !</b> التتابع كاينقز نيشان من 7 لـ 10.",
+    ruleCards: "1. كارطة من 40 ورقة إسبانية أصلية",
+    ruleCardsDesc: "الروندا كاتتلعب بـ 40 ورقة فـ 4 دالأنواع الأصلية: الدينار (الذهب)، الكواص (الكؤوس)، الزرواطة (العصي)، والسيوف. الأرقام من 1 حتى لـ 7، ومن بعد كاين 10 (الشيخ)، 11 (العود)، 12 (الملك). <b>ماكاينش 8 و 9 !</b> التتابع كاينقز نيشان من 7 لـ 10.",
     ruleCapture: "2. الماكلة والتتابع (السلسلة)",
     ruleCaptureDesc: "فاش كاتحط كارطة بحال اللي فالطابلة، كاتاكلها وكاتاكل معاها <b>كاع الكوارط اللي تابعينها فالتتابع</b> ! مثلا إلا كانت فالطابلة 7 و 10 و 11، ولعبتي 7، كاتاكل 7 و 10 و 11 فضربة وحدة.",
     ruleAnnounces: "3. الروندا والترينڭا",
@@ -1304,26 +1315,21 @@ function recordStat(type, meta = {}) {
 }
 
 /* =====================================================================
-   CARD RENDERING & ANIMATION HELPERS
+   AUTHENTIC PHOTO CARD RENDERING & ANIMATION
    ===================================================================== */
 function makeCardEl(id, extraClass = "") {
   const c = Ronda.CARDS[id];
   const e = document.createElement("div");
   e.className = `card ${c.suit} ${extraClass}`.trim();
   e.dataset.cardId = String(id);
-
-  const name = currentLang === 'ar' ? c.arName : (NM_FR[c.rank] || "");
-  e.innerHTML = `
-    <b>${c.rank}</b>
-    <i>${SYM[c.suit]}</i>
-    <span class="card-name">${name}</span>
-  `;
+  e.innerHTML = `<img src="cards/${id}.png" alt="${c.rank} ${c.suit}" draggable="false">`;
   return e;
 }
 
 function makeCardBack() {
   const e = document.createElement("div");
   e.className = "card back";
+  e.innerHTML = `<img src="cards/back.png" alt="Dos" draggable="false">`;
   return e;
 }
 
@@ -1437,7 +1443,7 @@ function render() {
   $("dealer-me").style.display = (g.dealer === 0) ? "inline-block" : "none";
   $("dealer-opp").style.display = (g.dealer === 1) ? "inline-block" : "none";
 
-  // Opponent Hand (cards face-down)
+  // Opponent Hand (cards face-down with authentic Moroccan back)
   const oppHand = $("opp-hand");
   oppHand.innerHTML = "";
   for (let i = 0; i < v.oppCount; i++) {
@@ -1448,17 +1454,15 @@ function render() {
   $("deck-left").textContent = v.deck;
   if (v.deck === 0) {
     $("deck-card").classList.add("empty");
-    $("deck-card").textContent = "∅";
   } else {
     $("deck-card").classList.remove("empty");
-    $("deck-card").textContent = "🎴";
   }
 
   // Won cards counters
   $("count-me-won").textContent = v.captured[0];
   $("count-opp-won").textContent = v.captured[1];
 
-  // Table Cards
+  // Table Cards (authentic Spanish cards)
   const table = $("table-cards");
   table.innerHTML = "";
   const tableCardsObj = v.table.map(id => Ronda.CARDS[id]);

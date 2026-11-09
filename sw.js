@@ -1,5 +1,12 @@
 /* sw.js — Service Worker pour Ronda PWA (mode hors-ligne complet) */
-const CACHE_NAME = 'ronda-cache-v1';
+const CACHE_NAME = 'ronda-cache-v2';
+
+const CARD_ASSETS = [];
+for (let i = 0; i < 40; i++) {
+  CARD_ASSETS.push(`./cards/${i}.png`);
+}
+CARD_ASSETS.push('./cards/back.png');
+
 const ASSETS = [
   './',
   './index.html',
@@ -26,7 +33,8 @@ const ASSETS = [
   './audio/sfx/slap.mp3',
   './audio/sfx/deal.mp3',
   './audio/sfx/capture.mp3',
-  './audio/sfx/chime.mp3'
+  './audio/sfx/chime.mp3',
+  ...CARD_ASSETS
 ];
 
 self.addEventListener('install', (event) => {
@@ -50,13 +58,11 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Ignorer les requêtes non GET
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        // En arrière-plan, essayer de mettre à jour le cache (stale-while-revalidate)
         fetch(event.request).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse.clone()));
