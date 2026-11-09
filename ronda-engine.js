@@ -133,15 +133,15 @@
       if (this.cfg.manualAnnounce) {
         // En mode annonce manuelle, on stocke les combos en attente d'annonce
         this.pendingCombos = [a, b];
-        if (a) this.emit('pendingCombo', { player: 0, kind: a.kind, rank: a.rank });
-        // L'IA annonce automatiquement si elle en a une (ou 90% en débutant)
         if (b) {
           const aiForgets = this.cfg.difficulty === 'debutant' && this.rnd() < 0.12;
-          if (!aiForgets) {
-            this.pendingCombos[1] = b;
-          } else {
-            this.pendingCombos[1] = null;
-          }
+          if (aiForgets) this.pendingCombos[1] = null;
+        }
+        if (a) {
+          this.emit('pendingCombo', { player: 0, kind: a.kind, rank: a.rank });
+        } else if (this.pendingCombos[1]) {
+          // L'IA annonce immédiatement si l'humain n'a pas de combo
+          this.announce(1);
         }
         return;
       }
@@ -205,16 +205,17 @@
 
       // Si le joueur joue sans avoir annoncé son combo en mode manuel, il perd l'annonce
       if (this.cfg.manualAnnounce && this.pendingCombos) {
-        if (this.pendingCombos[p]) {
-          this.emit('comboMissed', { player: p, kind: this.pendingCombos[p].kind });
-          this.pendingCombos[p] = null;
+        if (p === 0 && this.pendingCombos[0]) {
+          this.emit('comboMissed', { player: 0, kind: this.pendingCombos[0].kind });
+          this.pendingCombos[0] = null;
         }
-        // Si l'autre joueur avait un combo non encore résolu, on le valide
-        if (this.pendingCombos[1 - p]) {
-          this.announce(1 - p);
+        // Si l'IA avait un combo en attente, elle l'annonce avant de jouer
+        if (this.pendingCombos[1]) {
+          this.announce(1);
         }
         this.pendingCombos = null;
       }
+      if (this.over) return this.drain();
 
       const c = h.splice(i, 1)[0];
       this.played.add(c.id);
@@ -253,8 +254,10 @@
     /* ---------- IA ---------- */
 
     bestMove(level) {
+      if (this.over) return null;
       level = level || this.cfg.difficulty;
       const p = this.turn, h = this.hands[p];
+      if (!h || !h.length) return null;
       const opts = h.map(c => ({ c, r: gain(this.table, c, this.lp, this.cfg, p, false) }));
       const pickMax = f => {
         let best = -1e9, bs = [];

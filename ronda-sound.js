@@ -114,11 +114,11 @@
         if (!a) {
           a = new Audio(src);
           audioCache.set(src, a);
-        } else {
-          a.currentTime = 0;
         }
-        a.volume = Math.max(0, Math.min(1, volume * volFactor));
-        const p = a.play();
+        // Utiliser cloneNode pour permettre les sons superposés sans interruption
+        const sound = a.cloneNode();
+        sound.volume = Math.max(0, Math.min(1, volume * volFactor));
+        const p = sound.play();
         if (p && p.then) {
           p.then(() => resolve(true)).catch(() => resolve(false));
         } else {

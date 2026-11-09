@@ -496,6 +496,51 @@ button, select {
   opacity: 1;
 }
 
+/* Pop-up Round Recap Banner */
+#round-recap-banner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  background: rgba(10, 38, 28, 0.96);
+  border: 3px solid var(--accent);
+  color: #fff;
+  padding: 16px 22px;
+  border-radius: 18px;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.7), 0 0 28px var(--accent-glow);
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.3), opacity 0.35s ease;
+  text-align: center;
+  width: min(90vw, 380px);
+}
+
+#round-recap-banner.show {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+#round-recap-banner h3 {
+  margin: 0 0 8px 0;
+  color: var(--accent);
+  font-size: 1.25rem;
+}
+
+#round-recap-banner .recap-row {
+  display: flex;
+  justify-content: space-around;
+  margin: 8px 0;
+  font-size: 0.95rem;
+}
+
+#round-recap-banner .recap-score {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--accent);
+  margin-top: 6px;
+}
+
 /* Info and Log bar */
 #status-bar {
   display: flex;
@@ -821,6 +866,8 @@ button, select {
   <div id="felt">
     <!-- Pop-up Event Banner (Bount, Missa, Ronda, etc.) -->
     <div id="event-banner">BOUNT ! +1</div>
+    <!-- Pop-up Round Recap Banner -->
+    <div id="round-recap-banner"></div>
 
     <!-- Opponent Bar -->
     <div class="player-bar">
@@ -1348,23 +1395,30 @@ function animateFlight(elA, elB, cardId, isBack = false) {
     clone.style.top = rectA.top + 'px';
     clone.style.width = rectA.width + 'px';
     clone.style.height = rectA.height + 'px';
+    clone.style.transform = 'translate(0px, 0px) scale(1)';
+    clone.style.opacity = '1';
     document.body.appendChild(clone);
 
-    // Force reflow
-    clone.getBoundingClientRect();
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const dx = rectB.left - rectA.left;
+        const dy = rectB.top - rectA.top;
+        const scale = (rectB.width && rectA.width) ? (rectB.width / rectA.width) : 1;
+        clone.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+      });
+    });
 
-    const dx = rectB.left - rectA.left;
-    const dy = rectB.top - rectA.top;
-    clone.style.transform = `translate(${dx}px, ${dy}px) scale(${rectB.width / rectA.width})`;
-
+    let finished = false;
     const done = () => {
+      if (finished) return;
+      finished = true;
       clone.removeEventListener('transitionend', done);
       if (clone.parentNode) clone.parentNode.removeChild(clone);
       resolve();
     };
 
     clone.addEventListener('transitionend', done);
-    setTimeout(done, speed + 60);
+    setTimeout(done, speed + 80);
   });
 }
 
@@ -1373,6 +1427,35 @@ function showEventBanner(text) {
   b.textContent = text;
   b.classList.add("show");
   setTimeout(() => b.classList.remove("show"), 1100);
+}
+
+function showRoundRecap(e) {
+  const b = $("round-recap-banner");
+  if (!b) return Promise.resolve();
+
+  const title = currentLang === 'ar' ? `نهاية الشوط ${g.round}` : `Fin de la manche ${g.round}`;
+  const youTxt = currentLang === 'ar' ? 'أنت' : 'Toi';
+  const oppTxt = currentLang === 'ar' ? 'الخصم' : 'Adversaire';
+  const cardsTxt = currentLang === 'ar' ? 'ورقة' : 'cartes';
+  const ptsTxt = currentLang === 'ar' ? 'نقط' : 'pts';
+  const scoreTxt = currentLang === 'ar' ? 'مجموع النقط' : 'Score';
+
+  b.innerHTML = `
+    <h3>🔔 ${title}</h3>
+    <div class="recap-row">
+      <div><b>${youTxt}</b> : ${e.counts[0]} ${cardsTxt} <span style="color:var(--accent); font-weight:700;">(+${e.pts[0]} ${ptsTxt})</span></div>
+      <div><b>${oppTxt}</b> : ${e.counts[1]} ${cardsTxt} <span style="color:var(--accent); font-weight:700;">(+${e.pts[1]} ${ptsTxt})</span></div>
+    </div>
+    <div class="recap-score">${scoreTxt} : ${e.scores[0]} — ${e.scores[1]}</div>
+  `;
+
+  b.classList.add("show");
+  return new Promise(resolve => {
+    setTimeout(() => {
+      b.classList.remove("show");
+      setTimeout(resolve, 350);
+    }, 2000);
+  });
 }
 
 function bouncePile(player) {
@@ -1549,13 +1632,14 @@ async function processEvents(ev, animate = true) {
         });
 
         const speed = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--anim-speed')) || 0;
-        await new Promise(r => setTimeout(r, Math.max(300, speed)));
+        await new Promise(r => setTimeout(r, Math.max(260, speed)));
 
         // Animate cards glide to captured pile
         const pile = e.player === 0 ? $("pile-me") : $("pile-opp");
+        const pileTarget = pile ? (pile.querySelector('.mini-card-stack') || pile) : pile;
         const targets = Array.from(document.querySelectorAll("#table-cards .card.capturing"));
-        for (const t of targets) {
-          animateFlight(t, pile, parseInt(t.dataset.cardId));
+        if (pileTarget && targets.length) {
+          await Promise.all(targets.map(t => animateFlight(t, pileTarget, parseInt(t.dataset.cardId))));
         }
         bouncePile(e.player);
       }
@@ -1591,12 +1675,23 @@ async function processEvents(ev, animate = true) {
       log.push(currentLang === 'ar'
         ? `الراماسا : ${e.cards.length} ورقة شاطت مشات للي دار آخر ماكلة.`
         : `Ramasse : ${e.cards.length} carte(s) restantes vont au dernier preneur.`);
+      if (animate && e.cards && e.cards.length > 0) {
+        const pile = e.player === 0 ? $("pile-me") : $("pile-opp");
+        const pileTarget = pile ? (pile.querySelector('.mini-card-stack') || pile) : pile;
+        const targets = Array.from(document.querySelectorAll("#table-cards .card"));
+        if (pileTarget && targets.length) {
+          await Promise.all(targets.map(t => animateFlight(t, pileTarget, parseInt(t.dataset.cardId))));
+        }
+      }
       bouncePile(e.player);
     }
     else if (e.type === "roundEnd") {
       log.push(currentLang === 'ar'
         ? `نهاية الشوط : ${e.counts[0]}–${e.counts[1]} ورقة (+${e.pts[0]} / +${e.pts[1]} نقط).`
         : `Fin de manche : ${e.counts[0]}–${e.counts[1]} cartes (+${e.pts[0]} / +${e.pts[1]} pts).`);
+      if (animate) {
+        await showRoundRecap(e);
+      }
     }
     else if (e.type === "gameOver") {
       recordStat('gameOver', { winner: e.winner, scores: e.scores });
@@ -1860,6 +1955,24 @@ function loadTrialScenario(key) {
   const sc = TRIAL_SCENARIOS[key];
   if (!sc) return;
 
+  // Highlight active trial button
+  ['suite', 'bount', 'missa', 'ronda', 'tringa'].forEach(k => {
+    const btn = $('trial-step-' + k);
+    if (btn) {
+      if (k === key) {
+        btn.classList.add('active');
+        btn.style.background = 'var(--accent)';
+        btn.style.color = 'var(--btnfg)';
+        btn.style.fontWeight = '700';
+      } else {
+        btn.classList.remove('active');
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.fontWeight = '';
+      }
+    }
+  });
+
   $("trial-instructions").innerHTML = sc.desc[currentLang] || sc.desc.fr;
   $("trial-feedback").textContent = "";
 
@@ -2048,7 +2161,15 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // New Game
-  $("btn-new").onclick = () => start();
+  $("btn-new").onclick = () => {
+    if (g && !g.over && (g.scores[0] > 0 || g.scores[1] > 0 || g.round > 1 || (g.captured && (g.captured[0].length > 0 || g.captured[1].length > 0)))) {
+      const msg = currentLang === 'ar'
+        ? "كاين طرح باقي ملعوب دابا. واش باغي تبدا طرح جديد وتلغي هادا ؟"
+        : "Une partie est déjà en cours. Voulez-vous vraiment commencer une nouvelle partie ?";
+      if (!confirm(msg)) return;
+    }
+    start();
+  };
   $("btn-restart").onclick = () => start();
 
   // Rules Modal
