@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ronda-cache-v7';
+const CACHE_NAME = 'ronda-cache-v8';
 
 const CARD_ASSETS = [];
 for (let i = 0; i < 40; i++) {

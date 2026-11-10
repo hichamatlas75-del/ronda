@@ -216,6 +216,7 @@ button:disabled {
 }
 
 .op {
+  position: relative;
   background: rgba(0, 0, 0, 0.35);
   border-radius: 999px;
   padding: 5px 12px;
@@ -225,14 +226,64 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .op.t {
   border-color: var(--accent);
-  background: rgba(245, 197, 66, 0.18);
+  background: rgba(245, 197, 66, 0.22);
   color: #fff;
-  box-shadow: 0 0 10px var(--accent-glow);
+  box-shadow: 0 0 16px var(--accent-glow);
+  transform: scale(1.04);
+  animation: pulseOpponent 1.2s infinite alternate ease-in-out;
+}
+
+@keyframes pulseOpponent {
+  0% { box-shadow: 0 0 6px var(--accent-glow); transform: scale(1.02); }
+  100% { box-shadow: 0 0 18px var(--accent-glow), 0 0 0 2px var(--accent); transform: scale(1.05); }
+}
+
+.op-thinking {
+  display: inline-block;
+  animation: bounceThinking 0.7s infinite alternate ease-in-out;
+  margin-left: 3px;
+}
+
+@keyframes bounceThinking {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-4px) scale(1.15); }
+}
+
+.uno-shout-badge {
+  position: absolute;
+  top: -14px;
+  right: -8px;
+  background: #e04848;
+  color: #fff;
+  font-weight: 900;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  animation: popBadge 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  pointer-events: none;
+  z-index: 20;
+}
+
+@keyframes popBadge {
+  0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.card-land {
+  animation: landBounce 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes landBounce {
+  0% { transform: scale(1.08) translateY(-4px); }
+  100% { transform: scale(1) translateY(0); }
 }
 
 /* Moroccan Table / Felt */
@@ -525,7 +576,7 @@ button:disabled {
     <div class="score-num" id="score-me">0</div>
   </div>
   <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
-    <div style="display:flex; gap:6px;">
+    <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center;">
       <select id="np" aria-label="Joueurs">
         <option value="2">2 joueurs</option>
         <option value="3">3 joueurs</option>
@@ -535,6 +586,11 @@ button:disabled {
         <option value="debutant">Débutant</option>
         <option value="habitue" selected>Habitué</option>
         <option value="maitre">Maître</option>
+      </select>
+      <select id="cadence" aria-label="Cadence">
+        <option value="reelle" selected>⏱️ Cadence Réelle</option>
+        <option value="calme">☕ Détendue</option>
+        <option value="rapide">⚡ Rapide</option>
       </select>
     </div>
     <small style="color:var(--fg-dim);"><span id="lbl-round">Manche</span> <b id="round-num">1</b> · <span id="lbl-target">Objectif</span> <b>500</b> pts</small>
@@ -606,6 +662,84 @@ const FACE = {
 
 let currentLang = 'fr';
 let g, busy = false, log = [], gen = 0, unoOn = false, pending = null;
+
+const CADENCE_CONFIG = {
+  reelle: { thinkMin: 1200, thinkMax: 1700, animFlight: 380, observe: 950, drawPause: 700 },
+  calme:  { thinkMin: 1800, thinkMax: 2600, animFlight: 480, observe: 1400, drawPause: 1000 },
+  rapide: { thinkMin: 350,  thinkMax: 550,  animFlight: 200, observe: 300, drawPause: 200 }
+};
+
+function getCadence() {
+  const el = $("cadence");
+  const key = el ? el.value : "reelle";
+  return CADENCE_CONFIG[key] || CADENCE_CONFIG.reelle;
+}
+
+function delay(ms) {
+  return new Promise(res => setTimeout(res, ms));
+}
+
+function animateUnoFlight(fromEl, toEl, cardId, isBack = false, duration = 380) {
+  return new Promise(resolve => {
+    if (!fromEl || !toEl) return resolve();
+    const r1 = fromEl.getBoundingClientRect();
+    const r2 = toEl.getBoundingClientRect();
+    if (!r1.width || !r2.width) return resolve();
+
+    const fly = document.createElement("div");
+    fly.className = "card card-flying";
+    fly.style.position = "fixed";
+    fly.style.zIndex = "9999";
+    fly.style.left = `${r1.left}px`;
+    fly.style.top = `${r1.top}px`;
+    fly.style.width = `${r1.width || 72}px`;
+    fly.style.height = `${r1.height || 108}px`;
+    fly.style.pointerEvents = "none";
+    fly.style.transition = `all ${duration}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+    fly.style.boxShadow = "0 14px 28px rgba(0,0,0,0.5)";
+
+    const img = document.createElement("img");
+    if (isBack || cardId == null) {
+      img.src = "cards/back.png";
+    } else {
+      const c = Uno.CARDS[cardId];
+      img.src = getCardSrc(c);
+    }
+    img.style.width = "100%";
+    img.style.height = "100%";
+    img.style.borderRadius = "8px";
+    fly.appendChild(img);
+
+    document.body.appendChild(fly);
+    fly.getBoundingClientRect();
+
+    const targetW = r2.width || r1.width || 72;
+    const targetH = r2.height || r1.height || 108;
+    fly.style.left = `${r2.left}px`;
+    fly.style.top = `${r2.top}px`;
+    fly.style.width = `${targetW}px`;
+    fly.style.height = `${targetH}px`;
+    fly.style.transform = `scale(1.05) rotate(${(Math.random() - 0.5) * 8}deg)`;
+
+    setTimeout(() => {
+      if (fly.parentNode) fly.parentNode.removeChild(fly);
+      resolve();
+    }, duration + 30);
+  });
+}
+
+function showUnoShout(playerIdx) {
+  const target = playerIdx === 0 ? $("hand") : $("op-" + playerIdx);
+  if (!target) return;
+  const badge = document.createElement("div");
+  badge.className = "uno-shout-badge";
+  badge.textContent = "UNO !";
+  target.style.position = "relative";
+  target.appendChild(badge);
+  setTimeout(() => {
+    if (badge.parentNode) badge.parentNode.removeChild(badge);
+  }, 1200);
+}
 
 const $ = id => document.getElementById(id);
 const use = (s, x) => `<svg ${x||""}><use href="#${s}"/></svg>`;
@@ -733,7 +867,7 @@ function say(ev) {
   log = log.slice(-3);
 }
 
-function render() {
+function render(thinkingPlayer = null) {
   const v = g.view(0);
   $("score-me").textContent = v.scores[0];
   const maxOpp = Math.max(...v.scores.slice(1));
@@ -745,12 +879,15 @@ function render() {
     if (!i) return "";
     const name = currentLang === 'ar' ? NAMES_AR[i] : NAMES[i];
     const isTurn = v.turn === i && !v.roundOver;
-    return `<div class="op${isTurn ? " t" : ""}"><b>${name}</b> ${n} 🂠 · ${v.scores[i]} pts</div>`;
+    const isThinking = thinkingPlayer === i;
+    return `<div id="op-${i}" class="op${isTurn ? " t" : ""}"><b>${name}</b> ${n} 🂠 · ${v.scores[i]} pts${isThinking ? ' <span class="op-thinking">🤔</span>' : ''}</div>`;
   }).join("");
 
   // Top Card
   $("top").innerHTML = "";
-  $("top").appendChild(cardEl(v.top));
+  const topEl = cardEl(v.top);
+  topEl.classList.add("card-land");
+  $("top").appendChild(topEl);
 
   // Color Indicator
   $("cur").innerHTML = use(SUIT[v.color]);
@@ -789,13 +926,22 @@ function render() {
   $("msg").innerHTML = log.join("<br>") + promptText;
 }
 
-function humanPlay(id, color) {
+async function humanPlay(id, color) {
+  if (busy) return;
   const c = Uno.CARDS[id];
   if (c.color === "W" && !color) {
     pending = id;
     $("colors").style.display = "flex";
     return;
   }
+  busy = true;
+  const cad = getCadence();
+
+  const handCardEl = $("hand").querySelector(`[data-id="${id}"]`);
+  if (handCardEl) {
+    await animateUnoFlight(handCardEl, $("top"), id, false, cad.animFlight);
+  }
+
   try {
     if (typeof RondaSound !== 'undefined') {
       RondaSound.playSFX('slap');
@@ -812,34 +958,97 @@ function humanPlay(id, color) {
       }
     }
   } catch(e) {}
-  say(g.play(0, id, color || null, unoOn));
+
+  const events = g.play(0, id, color || null, unoOn);
+  if (unoOn) showUnoShout(0);
   unoOn = false;
+  say(events);
   render();
+
+  if (events.some(e => e.type === "roundEnd" || e.type === "gameOver")) {
+    busy = false;
+    return;
+  }
+
+  await delay(cad.observe);
   loop();
 }
 
-function loop() {
-  if (g.over || g.roundOver || g.turn === 0) {
+async function stepAI(curGen) {
+  if (curGen !== gen || !g || g.over || g.roundOver || g.turn === 0) {
     busy = false;
     render();
     return;
   }
   busy = true;
-  const my = gen;
+  const curP = g.turn;
+  const cad = getCadence();
+
+  render(curP);
+  const thinkTime = cad.thinkMin + Math.floor(Math.random() * (cad.thinkMax - cad.thinkMin));
+  await delay(thinkTime);
+  if (curGen !== gen || !g) return;
+
+  const events = g.aiStep();
+
+  for (const ev of events) {
+    if (ev.type === "draw" && ev.player === curP) {
+      try { RondaSound.playSFX('deal'); } catch(err) {}
+      const opEl = $("op-" + curP);
+      if (opEl) {
+        await animateUnoFlight($("pile"), opEl, null, true, cad.animFlight);
+      }
+      await delay(cad.drawPause);
+    } else if (ev.type === "play" && ev.player === curP) {
+      const opEl = $("op-" + curP);
+      if (opEl) {
+        await animateUnoFlight(opEl, $("top"), ev.card, false, cad.animFlight);
+      }
+    } else if (ev.type === "uno") {
+      showUnoShout(ev.player);
+    }
+  }
+
+  say(events);
   render();
-  setTimeout(() => {
-    if (my !== gen) return;
-    say(g.aiStep());
-    loop();
-  }, 850);
+
+  if (g.over || g.roundOver) {
+    busy = false;
+    return;
+  }
+
+  await delay(cad.observe);
+  if (curGen !== gen) return;
+
+  if (g.turn === 0) {
+    busy = false;
+    render();
+  } else {
+    stepAI(curGen);
+  }
 }
 
-$("pile").onclick = () => {
+function loop() {
+  if (!g || g.over || g.roundOver || g.turn === 0) {
+    busy = false;
+    render();
+    return;
+  }
+  stepAI(gen);
+}
+
+$("pile").onclick = async () => {
   if (busy || g.turn !== 0 || g.roundOver || g.over || g.drawn != null) return;
-  try { RondaSound.play('deal'); } catch(err) {}
+  busy = true;
+  const cad = getCadence();
+  try { RondaSound.playSFX('deal'); } catch(err) {}
+  await animateUnoFlight($("pile"), $("hand"), null, true, cad.animFlight);
   say(g.draw1(0));
+  busy = false;
   render();
-  loop();
+  if (g.drawn == null) {
+    loop();
+  }
 };
 
 $("pass").onclick = () => {
@@ -925,6 +1134,18 @@ $("btn-lang").onclick = () => {
   $("pass").textContent = currentLang === 'ar' ? "دوز" : "Passer";
   $("nw").textContent = currentLang === 'ar' ? "طرح جديد" : "Nouvelle";
   $("nx").textContent = currentLang === 'ar' ? "الشوط الموالي" : "Manche suivante";
+  const cadOpts = $("cadence").options;
+  if (currentLang === 'ar') {
+    cadOpts[0].text = "⏱️ وتيرة حقيقية";
+    cadOpts[1].text = "☕ مرتاحة";
+    cadOpts[2].text = "⚡ سريعة";
+    try { RondaSound.setVoiceLanguage('ar'); } catch(e) {}
+  } else {
+    cadOpts[0].text = "⏱️ Cadence Réelle";
+    cadOpts[1].text = "☕ Détendue";
+    cadOpts[2].text = "⚡ Rapide";
+    try { RondaSound.setVoiceLanguage('fr'); } catch(e) {}
+  }
   render();
 };
 
