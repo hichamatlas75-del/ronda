@@ -97,16 +97,35 @@
 │   ├── darija/        # Voix marocaines authentiques (ronda, tringa, missa, bount, win, lose)
 │   ├── fr/            # Voix françaises (ronda, tringa, missa, bount, win, lose)
 │   └── sfx/           # Effets sonores de cartes (slap, deal, capture, chime)
-├── icons/             # Icônes SVG, PNG 192, PNG 512, favicon
-├── test-ronda.js      # Suite de tests unitaires et d'auto-test (60 parties IA)
+├── package.json       # Scripts de test, démarrage et métadonnées du projet
+├── test-ronda.js      # Suite de tests complète (Ronda, Uno, Chrome headless, audio, Joker)
+├── test-browser-click.js # Test headless Chrome des interactions et sons
+├── test-rules-modal.js   # Test headless Chrome des règles et du mode d'essai interactif
+├── test-joker-hand.js    # Test headless Chrome de l'affichage de la main restante lors du choix de couleur Joker
+├── audit.js           # Audit exhaustif de 200 parties (100 Ronda + 100 Uno) avec sérialisation
 └── README.md          # Documentation du projet
 ```
 
 ---
 
-## 🧪 Lancer les Tests
+## 🧪 Lancer les Tests et l'Audit
 
 ```bash
-node test-ronda.js
+# Lancer toute la suite de tests (moteurs + interface + sons + Joker hand preview)
+npm test
+# ou : node test-ronda.js
+
+# Lancer l'audit de 200 parties (100 Ronda + 100 Uno avec sérialisation & conservation des cartes)
+npm run audit
+# ou : node audit.js
+
+# Tests ciblés headless Chrome
+npm run test:browser
+npm run test:rules
+npm run test:joker
+
+# Démarrer le serveur local autonome
+npm start
+# ou : node server.js
 ```
-Tous les tests valident la conservation des 40 cartes, le décompte des points, les annonces manuelles et la sérialisation/restauration.
+Tous les tests valident la conservation stricte des 40 cartes (Ronda) et 108 cartes (Uno), la sérialisation/restauration, le décompte des points, les annonces manuelles, l'affichage de la main restante sous les yeux lors du déploiement d'un joker, et les interactions dans le navigateur.

@@ -16,7 +16,28 @@ function delay(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 
+const { startServer } = require('./server.js');
+
+function isServerRunning(port = 8080) {
+  return new Promise((resolve) => {
+    const req = http.get(`http://127.0.0.1:${port}/index.html`, (res) => {
+      resolve(res.statusCode === 200);
+    });
+    req.on('error', () => resolve(false));
+    req.setTimeout(500, () => {
+      req.destroy();
+      resolve(false);
+    });
+  });
+}
+
 async function run() {
+  let localServer = null;
+  if (!(await isServerRunning(8080))) {
+    console.log('Port 8080 not running, auto-starting server...');
+    localServer = await startServer(8080);
+  }
+
   console.log('Launching headless Chrome for Rules & Trial Mode verification...');
   const chrome = spawn('google-chrome', [
     '--headless=new',
@@ -218,7 +239,8 @@ async function run() {
 
     ws.close();
   } finally {
-    chrome.kill('SIGTERM');
+    if (chrome) chrome.kill('SIGTERM');
+    if (localServer) localServer.close();
   }
 }
 

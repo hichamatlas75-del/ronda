@@ -1099,41 +1099,134 @@ button, select {
 .uno-badge.caballo { background: #1f7a3a; }
 .uno-badge.wild { background: #b98a00; }
 
-#uno-cp {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+#modal-uno-colors {
+  background: rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(1.5px);
+  -webkit-backdrop-filter: blur(1.5px);
+}
+
+#modal-uno-colors .modal-dialog {
+  width: min(94vw, 440px);
+  padding: 16px 18px;
+  background: #092328;
+  border: 2px solid var(--accent);
+  border-radius: 18px;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
-#uno-cp button {
-  height: 80px;
-  width: 90px;
+.uno-cp-hand-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: initial;
+}
+
+.uno-cp-hand-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--fg-dim);
+}
+
+.uno-cp-hand-preview {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px 6px;
+  justify-content: flex-start;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 84px;
+  scrollbar-width: thin;
+}
+
+.uno-cp-hand-preview .card {
+  width: 50px;
+  height: 75px;
+  flex-shrink: 0;
+  cursor: default;
+  transform: none !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  border-radius: 6px;
+  margin: 0;
+}
+
+.uno-cp-hand-preview .card img {
+  border-radius: 6px;
+}
+
+.uno-cp-hand-preview .card:hover {
+  transform: translateY(-3px) scale(1.06) !important;
+}
+
+#uno-cp {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.uno-cp-btn {
+  height: 84px;
   border-radius: 14px;
   background: #fff;
-  padding: 8px;
+  padding: 6px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 2px solid transparent;
-  gap: 4px;
+  border: 2.5px solid transparent;
+  gap: 2px;
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-#uno-cp button:hover {
-  border-color: var(--accent);
-  transform: scale(1.05);
+.uno-cp-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
 }
 
-#uno-cp svg {
-  height: 44px;
-  width: 44px;
+.uno-cp-btn.suit-oros { border-color: #d4a300; background: #fffdf5; }
+.uno-cp-btn.suit-copas { border-color: #d42222; background: #fff5f5; }
+.uno-cp-btn.suit-espadas { border-color: #1f6ad4; background: #f5f8ff; }
+.uno-cp-btn.suit-bastos { border-color: #1a9643; background: #f5fff7; }
+
+.uno-cp-btn svg {
+  height: 36px;
+  width: 36px;
 }
 
-#uno-cp span {
-  font-size: 0.75rem;
+.uno-cp-btn .suit-label {
+  font-size: 0.82rem;
   font-weight: 800;
-  color: #222;
+  color: #111;
+  line-height: 1.1;
+}
+
+.uno-cp-btn-count {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-top: 2px;
+  display: inline-block;
+}
+
+.uno-cp-btn-count.has-cards {
+  background: #144e39;
+  color: #f7d070;
+  border: 1px solid rgba(247, 208, 112, 0.4);
+}
+
+.uno-cp-btn-count.no-cards {
+  background: rgba(0, 0, 0, 0.08);
+  color: #777;
 }
 
 </style>
@@ -1392,8 +1485,24 @@ button, select {
 
 <!-- Uno Color Picker Modal -->
 <div class="modal-overlay" id="modal-uno-colors">
-  <div class="modal-dialog" style="text-align:center;">
-    <h3 style="margin:0 0 14px 0; color:var(--accent);" data-i18n="unoChooseColor">Choisis une couleur</h3>
+  <div class="modal-dialog">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="margin:0; color:var(--accent); display:flex; align-items:center; gap:8px;" id="modal-uno-color-title">
+        <span>🎨</span> <span data-i18n="unoChooseColor">Choisis une couleur</span>
+      </h3>
+      <button class="modal-close" id="btn-close-uno-colors" title="Annuler" style="font-size:1.3rem; padding:2px 8px; background:transparent; border:none; color:var(--fg); cursor:pointer;">✕</button>
+    </div>
+
+    <!-- Hand under player's eyes -->
+    <div class="uno-cp-hand-section">
+      <div class="uno-cp-hand-header">
+        <span id="uno-cp-hand-label" data-i18n="unoRemainingHand">Ta main restante :</span>
+        <span id="uno-cp-hand-count" style="color:var(--accent); font-weight:800;"></span>
+      </div>
+      <div id="uno-cp-hand" class="uno-cp-hand-preview"></div>
+    </div>
+
+    <!-- Color Choices with Badges -->
     <div id="uno-cp"></div>
   </div>
 </div>
@@ -1722,6 +1831,7 @@ const I18N = {
     tabUno: "Uno Maroc",
     unoPass: "Passer",
     unoChooseColor: "Choisis une couleur",
+    unoRemainingHand: "Ta main restante :",
     unoNextRound: "Manche suivante",
     tabRules: "Règles complètes",
     tabTrial: "Mode d'essai interactif",
@@ -1796,6 +1906,7 @@ const I18N = {
     tabUno: "أونو مغربي",
     unoPass: "دوز",
     unoChooseColor: "عزل اللون",
+    unoRemainingHand: "كوارطك اللي بقاو فيديك :",
     unoNextRound: "الشوط الموالي",
     tabRules: "القواعد الأصلية",
     tabTrial: "جرّب وتعلّم (وضع تفاعلي)",
@@ -3597,11 +3708,11 @@ const UnoGameController = (() => {
         log.push(currentLang === 'ar' ? `${pName} لعب ${label(e.card)}${sDesc}` : `${pName} joue ${label(e.card)}${sDesc}.`);
         try {
           RondaSound.playSFX('slap');
-          if (c.value === "SOTA") {
+          if (c.value === "S" || c.value === "SOTA") {
             setTimeout(() => { RondaSound.playSFX('block'); RondaSound.say('skip'); }, 140);
-          } else if (c.value === "CABALLO") {
+          } else if (c.value === "R" || c.value === "CABALLO") {
             setTimeout(() => { RondaSound.playSFX('swoosh'); RondaSound.say('reverse'); }, 140);
-          } else if (c.value === "REY") {
+          } else if (c.value === "D2" || c.value === "REY") {
             setTimeout(() => RondaSound.say('draw2'), 140);
           } else if (c.value === "D4") {
             setTimeout(() => RondaSound.say('draw4'), 140);
@@ -3716,12 +3827,79 @@ const UnoGameController = (() => {
     $("uno-msg").innerHTML = log.join("<br>") + promptText;
   }
 
+  function openColorPicker(id) {
+    pending = id;
+    if (!g) return;
+    const v = g.view(0);
+
+    // Remaining cards in hand (excluding the played joker)
+    const myHand = v.hand.slice();
+    const idx = myHand.indexOf(id);
+    if (idx >= 0) myHand.splice(idx, 1);
+
+    // Count cards per color
+    const counts = { R: 0, Y: 0, G: 0, B: 0, W: 0 };
+    myHand.forEach(cid => {
+      const card = Uno.CARDS[cid];
+      if (counts[card.color] !== undefined) counts[card.color]++;
+    });
+
+    // Populate hand preview
+    const handBox = $("uno-cp-hand");
+    if (handBox) {
+      handBox.innerHTML = "";
+      if (myHand.length === 0) {
+        const emptyMsg = document.createElement("div");
+        emptyMsg.style.cssText = "color:var(--accent); font-weight:700; font-size:0.92rem; padding:10px;";
+        emptyMsg.textContent = currentLang === 'ar'
+          ? "🎯 آخر كارطة لحتي ! مابقات عندك حتى ورقة خرى."
+          : "🎯 Dernière carte jouée ! Tu n'as plus d'autre carte.";
+        handBox.appendChild(emptyMsg);
+      } else {
+        myHand.forEach(cid => {
+          const ce = cardEl(cid);
+          ce.style.cursor = "default";
+          ce.onclick = null;
+          handBox.appendChild(ce);
+        });
+      }
+    }
+
+    const countLabel = $("uno-cp-hand-count");
+    if (countLabel) {
+      countLabel.textContent = currentLang === 'ar'
+        ? `${myHand.length} كوارط`
+        : `${myHand.length} carte${myHand.length > 1 ? "s" : ""}`;
+    }
+
+    // Populate color buttons with counts
+    const colors = ["Y", "R", "G", "B"]; // Oros, Copas, Bastos, Espadas
+    $("uno-cp").innerHTML = colors.map(c => {
+      const s = SUIT[c];
+      const sName = currentLang === 'ar' ? SUIT_AR[s] : s.toUpperCase();
+      const n = counts[c];
+      const countTxt = currentLang === 'ar'
+        ? `${n} كوارط`
+        : `${n} carte${n > 1 ? "s" : ""}`;
+      const badgeCls = n > 0 ? "has-cards" : "no-cards";
+
+      return `
+        <button class="uno-cp-btn suit-${s}" data-c="${c}">
+          <svg style="width:36px; height:36px; pointer-events:none;"><use href="#${s}"/></svg>
+          <span class="suit-label">${sName}</span>
+          <span class="uno-cp-btn-count ${badgeCls}">${countTxt}</span>
+        </button>
+      `;
+    }).join("");
+
+    $("modal-uno-colors").style.display = "flex";
+  }
+
   async function humanPlay(id, color) {
     if (busy) return;
     const c = Uno.CARDS[id];
     if (c.color === "W" && !color) {
-      pending = id;
-      $("modal-uno-colors").style.display = "flex";
+      openColorPicker(id);
       return;
     }
     busy = true;
@@ -3735,11 +3913,11 @@ const UnoGameController = (() => {
     try {
       if (typeof RondaSound !== 'undefined') {
         RondaSound.playSFX('slap');
-        if (c.value === "SOTA") {
+        if (c.value === "S" || c.value === "SOTA") {
           setTimeout(() => { RondaSound.playSFX('block'); RondaSound.say('skip'); }, 140);
-        } else if (c.value === "CABALLO") {
+        } else if (c.value === "R" || c.value === "CABALLO") {
           setTimeout(() => { RondaSound.playSFX('swoosh'); RondaSound.say('reverse'); }, 140);
-        } else if (c.value === "REY") {
+        } else if (c.value === "D2" || c.value === "REY") {
           setTimeout(() => RondaSound.say('draw2'), 140);
         } else if (c.value === "D4") {
           setTimeout(() => RondaSound.say('draw4'), 140);
@@ -3882,12 +4060,20 @@ const UnoGameController = (() => {
     $("uno-np").onchange = start;
     $("uno-lv").onchange = start;
 
-    $("uno-cp").innerHTML = ["R", "Y", "G", "B"].map(c => `
-      <button data-c="${c}">
-        <svg style="width:40px; height:40px; pointer-events:none;"><use href="#${SUIT[c]}"/></svg>
-        <span>${SUIT[c].toUpperCase()}</span>
-      </button>
-    `).join("");
+    const closeColorsBtn = $("btn-close-uno-colors");
+    if (closeColorsBtn) {
+      closeColorsBtn.onclick = () => {
+        $("modal-uno-colors").style.display = "none";
+        pending = null;
+      };
+    }
+
+    $("modal-uno-colors").onclick = (e) => {
+      if (e.target === $("modal-uno-colors")) {
+        $("modal-uno-colors").style.display = "none";
+        pending = null;
+      }
+    };
 
     $("uno-cp").onclick = e => {
       const b = e.target.closest("button");
@@ -3912,7 +4098,7 @@ const UnoGameController = (() => {
     start();
   }
 
-  return { init, render, start, isStarted: () => g !== null };
+  return { init, render, start, isStarted: () => g !== null, getGame: () => g, openColorPicker };
 })();
 window.UnoGameController = UnoGameController;
 

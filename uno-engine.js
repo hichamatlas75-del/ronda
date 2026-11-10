@@ -81,7 +81,7 @@
     drawCards(p, k) {
       const got = [];
       for (let i = 0; i < k; i++) {
-        if (!this.deck.length) {
+        if (!this.deck.length && this.discard.length > 1) {
           const keep = this.discard.pop();
           this.deck = this.shuffle(this.discard); this.discard = [keep];
           if (this.deck.length) this.emit('reshuffle', {});
@@ -200,19 +200,70 @@
           if (s > bv) { bv = s; pick = c; }
         }
       }
-      return this.play(p, pick.id, pick.color === 'W' ? this.pickColor(p, level) : null, true);
+      const aiSaysUno = level === 'debutant' ? (this.rnd() >= 0.15) : (level === 'habitue' ? (this.rnd() >= 0.03) : true);
+      return this.play(p, pick.id, pick.color === 'W' ? this.pickColor(p, level) : null, aiSaysUno);
     }
 
-    /* ---------- État public ---------- */
+    /* ---------- État public / Sauvegarde ---------- */
 
     view(p = 0) {
       return {
-        n: this.n, turn: this.turn, dir: this.dir, top: this.top.id, color: this.color,
+        n: this.n, turn: this.turn, dir: this.dir, top: this.top ? this.top.id : null, color: this.color,
         hand: this.hands[p].map(c => c.id), counts: this.hands.map(h => h.length),
         deck: this.deck.length, drawn: this.drawn, legal: this.legalMoves(p),
         scores: this.scores.slice(), round: this.round, roundOver: this.roundOver,
         roundWinner: this.roundWinner, over: this.over, winner: this.winner
       };
+    }
+
+    serialize() {
+      return {
+        cfg: Object.assign({}, this.cfg),
+        s: this.s,
+        n: this.n,
+        scores: this.scores.slice(),
+        round: this.round,
+        roundOver: this.roundOver,
+        roundWinner: this.roundWinner,
+        over: this.over,
+        winner: this.winner,
+        deck: this.deck.map(c => c.id),
+        discard: this.discard.map(c => c.id),
+        top: this.top ? this.top.id : null,
+        color: this.color,
+        dir: this.dir,
+        turn: this.turn,
+        drawn: this.drawn,
+        hands: this.hands.map(h => h.map(c => c.id)),
+        lacks: this.lacks.map(set => [...set])
+      };
+    }
+
+    static restore(o) {
+      const g = Object.create(Game.prototype);
+      const C = id => CARDS[id];
+      Object.assign(g, {
+        cfg: Object.assign({}, DEFAULTS, o.cfg || {}),
+        s: o.s,
+        n: o.n,
+        scores: (o.scores || []).slice(),
+        round: o.round,
+        roundOver: !!o.roundOver,
+        roundWinner: o.roundWinner,
+        over: !!o.over,
+        winner: o.winner,
+        deck: (o.deck || []).map(C),
+        discard: (o.discard || []).map(C),
+        top: o.top != null ? C(o.top) : null,
+        color: o.color,
+        dir: o.dir || 1,
+        turn: o.turn || 0,
+        drawn: o.drawn,
+        hands: (o.hands || []).map(h => h.map(C)),
+        lacks: (o.lacks || []).map(arr => new Set(arr)),
+        events: []
+      });
+      return g;
     }
 
     // Auto-test : parties IA contre IA (2 à 4 joueurs), vérifie la conservation des 108 cartes.

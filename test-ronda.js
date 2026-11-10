@@ -39,6 +39,19 @@ if (gMiss.pendingCombos && gMiss.pendingCombos[0]) {
   console.log('Combo successfully missed as expected!');
 }
 
+console.log('--- 4b. Testing Pending Combo Preservation when AI Plays First ---');
+const gAiFirst = new Ronda.Game({ manualAnnounce: true });
+gAiFirst.dealer = 0; // player 0 is dealer -> AI (player 1) plays first
+gAiFirst.turn = 1;
+gAiFirst.pendingCombos = [{ kind: 'ronda', rank: 5 }, null];
+gAiFirst.play(gAiFirst.legalMoves()[0]); // AI plays its move
+assert(gAiFirst.pendingCombos !== null, 'pendingCombos must NOT be wiped when AI plays first');
+assert(gAiFirst.pendingCombos[0] && gAiFirst.pendingCombos[0].rank === 5, 'Human pending combo must be preserved');
+assert.deepStrictEqual(gAiFirst.view(0).pendingCombo, { kind: 'ronda', rank: 5 }, 'view(0) must still contain pendingCombo');
+const humanAnnounced = gAiFirst.announce(0);
+assert.strictEqual(humanAnnounced, true, 'Human must be able to announce their combo on their turn');
+console.log('AI-first pending combo preservation verified successfully!');
+
 console.log('--- 5. Testing Custom Rules (41 target, majority, tringa 10) ---');
 const gCustom = new Ronda.Game({
   target: 41,
@@ -56,6 +69,7 @@ assert.strictEqual(gCustom.cfg.missaPts, 2);
 assert.strictEqual(gCustom.cfg.bountPts, 2);
 assert.strictEqual(gCustom.cfg.cardsScoring, 'majority');
 assert.strictEqual(gCustom.cfg.missaOnLastPlay, true);
+
 console.log('--- 6. Testing Uno Engine Self-Test (60 IA vs IA games) ---');
 const Uno = require('./uno-engine.js');
 const unoTestRes = Uno.Game.selfTest(60);
@@ -63,12 +77,24 @@ console.log('Uno self-test results:', unoTestRes);
 assert(unoTestRes.parties === 60, 'Should complete 60 Uno games');
 assert(unoTestRes.coups > 0, 'Uno games must execute plies');
 
+console.log('--- 6b. Testing Uno Serialization and Restoration ---');
+const u1 = new Uno.Game({ seed: 77, players: 3 });
+u1.aiStep();
+const uSerialized = u1.serialize();
+const u2 = Uno.Game.restore(uSerialized);
+assert.deepStrictEqual(u1.view(0), u2.view(0), 'Restored Uno game view must match original');
+assert.strictEqual(u1.top.id, u2.top.id, 'Top card must match');
+console.log('Uno serialization and restoration verified successfully!');
+
 console.log('--- 7. Testing Browser Click & Audio Integration (Headless Chrome) ---');
 const { execSync } = require('child_process');
 execSync('node test-browser-click.js', { stdio: 'inherit' });
 
 console.log('--- 8. Testing Rules Modal & Interactive Trial Mode (Headless Chrome) ---');
 execSync('node test-rules-modal.js', { stdio: 'inherit' });
+
+console.log('--- 9. Testing Uno Joker Modal Remaining Hand (Headless Chrome) ---');
+execSync('node test-joker-hand.js', { stdio: 'inherit' });
 
 console.log('=== ALL TESTS PASSED! ===');
 

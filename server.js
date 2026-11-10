@@ -2,8 +2,8 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = 8080;
-const PUBLIC_DIR = '/home/antigravity/hichamatlas75-del/ronda';
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
+const PUBLIC_DIR = path.resolve(__dirname);
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -18,10 +18,17 @@ const MIME_TYPES = {
 
 const server = http.createServer((req, res) => {
   let reqPath = req.url.split('?')[0];
+  try { reqPath = decodeURIComponent(reqPath); } catch (e) {}
   if (reqPath === '/') reqPath = '/index.html';
 
   const safePath = path.normalize(reqPath).replace(/^(\.\.[\/\\])+/, '');
   const filePath = path.join(PUBLIC_DIR, safePath);
+
+  // Security check: ensure path stays within PUBLIC_DIR
+  if (!filePath.startsWith(PUBLIC_DIR)) {
+    res.writeHead(403, { 'Content-Type': 'text/plain' });
+    return res.end('403 Forbidden');
+  }
 
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
@@ -61,6 +68,18 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Ronda server running at http://localhost:${PORT}`);
-});
+function startServer(port = PORT) {
+  return new Promise((resolve, reject) => {
+    const s = server.listen(port, '0.0.0.0', () => {
+      console.log(`Ronda server running at http://localhost:${port}`);
+      resolve(s);
+    });
+    s.on('error', reject);
+  });
+}
+
+if (require.main === module) {
+  startServer(PORT);
+}
+
+module.exports = { server, startServer, PORT, PUBLIC_DIR };

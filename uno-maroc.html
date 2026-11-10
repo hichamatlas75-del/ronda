@@ -517,40 +517,134 @@ button:disabled {
   box-shadow: 0 12px 30px rgba(0,0,0,0.7);
 }
 
-#cp {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+#colors {
+  background: rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(1.5px);
+  -webkit-backdrop-filter: blur(1.5px);
+}
+
+#colors > div {
+  width: min(94vw, 440px);
+  padding: 16px 18px;
+  background: #092328;
+  border: 2px solid var(--accent);
+  border-radius: 18px;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
-#cp button {
-  height: 80px;
-  width: 90px;
+.uno-cp-hand-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: initial;
+}
+
+.uno-cp-hand-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--fg-dim);
+}
+
+.uno-cp-hand-preview {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px 6px;
+  justify-content: flex-start;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 84px;
+  scrollbar-width: thin;
+}
+
+.uno-cp-hand-preview .card {
+  width: 50px;
+  height: 75px;
+  flex-shrink: 0;
+  cursor: default;
+  transform: none !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  border-radius: 6px;
+  margin: 0;
+}
+
+.uno-cp-hand-preview .card img {
+  border-radius: 6px;
+}
+
+.uno-cp-hand-preview .card:hover {
+  transform: translateY(-3px) scale(1.06) !important;
+}
+
+#cp {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.uno-cp-btn {
+  height: 84px;
   border-radius: 14px;
   background: #fff;
-  padding: 8px;
+  padding: 6px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 2px solid transparent;
-  gap: 4px;
+  border: 2.5px solid transparent;
+  gap: 2px;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-#cp button:hover {
-  border-color: var(--accent);
-  transform: scale(1.05);
+.uno-cp-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
 }
 
-#cp svg {
-  height: 44px;
-  width: 44px;
+.uno-cp-btn.suit-oros { border-color: #d4a300; background: #fffdf5; }
+.uno-cp-btn.suit-copas { border-color: #d42222; background: #fff5f5; }
+.uno-cp-btn.suit-espadas { border-color: #1f6ad4; background: #f5f8ff; }
+.uno-cp-btn.suit-bastos { border-color: #1a9643; background: #f5fff7; }
+
+.uno-cp-btn svg {
+  height: 36px;
+  width: 36px;
 }
 
-#cp span {
-  font-size: 0.75rem;
+.uno-cp-btn .suit-label {
+  font-size: 0.82rem;
   font-weight: 800;
-  color: #222;
+  color: #111;
+  line-height: 1.1;
+}
+
+.uno-cp-btn-count {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-top: 2px;
+  display: inline-block;
+}
+
+.uno-cp-btn-count.has-cards {
+  background: #144e39;
+  color: #f7d070;
+  border: 1px solid rgba(247, 208, 112, 0.4);
+}
+
+.uno-cp-btn-count.no-cards {
+  background: rgba(0, 0, 0, 0.08);
+  color: #777;
 }
 
 /* Modals */
@@ -804,7 +898,23 @@ button:disabled {
 <!-- Color Picker Overlay -->
 <div class="ov" id="colors">
   <div>
-    <b style="font-size:1.1rem;" id="lbl-pick-color">Choisis une couleur</b>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <b style="font-size:1.15rem; color:var(--accent); display:flex; align-items:center; gap:8px;" id="lbl-pick-color">
+        <span>🎨</span> <span>Choisis une couleur</span>
+      </b>
+      <button id="btn-close-colors" title="Annuler" style="font-size:1.3rem; padding:2px 8px; background:transparent; border:none; color:var(--fg); cursor:pointer;">✕</button>
+    </div>
+
+    <!-- Hand under player's eyes -->
+    <div class="uno-cp-hand-section">
+      <div class="uno-cp-hand-header">
+        <span id="colors-hand-label">Ta main restante :</span>
+        <span id="colors-hand-count" style="color:var(--accent); font-weight:800;"></span>
+      </div>
+      <div id="colors-hand" class="uno-cp-hand-preview"></div>
+    </div>
+
+    <!-- 4 Colors Grid with Card Count Badges -->
     <div id="cp"></div>
   </div>
 </div>
@@ -1236,11 +1346,11 @@ function say(ev) {
       log.push(currentLang === 'ar' ? `${pName} لعب ${label(e.card)}${sDesc}` : `${pName} joue ${label(e.card)}${sDesc}.`);
       try {
         RondaSound.playSFX('slap');
-        if (c.value === "SOTA") {
+        if (c.value === "S" || c.value === "SOTA") {
           setTimeout(() => { RondaSound.playSFX('block'); RondaSound.say('skip'); }, 140);
-        } else if (c.value === "CABALLO") {
+        } else if (c.value === "R" || c.value === "CABALLO") {
           setTimeout(() => { RondaSound.playSFX('swoosh'); RondaSound.say('reverse'); }, 140);
-        } else if (c.value === "REY") {
+        } else if (c.value === "D2" || c.value === "REY") {
           setTimeout(() => RondaSound.say('draw2'), 140);
         } else if (c.value === "D4") {
           setTimeout(() => RondaSound.say('draw4'), 140);
@@ -1359,12 +1469,79 @@ function render(thinkingPlayer = null) {
   $("msg").innerHTML = log.join("<br>") + promptText;
 }
 
+function openColorPicker(id) {
+  pending = id;
+  if (!g) return;
+  const v = g.view(0);
+
+  // Remaining cards in hand (excluding the played joker)
+  const myHand = v.hand.slice();
+  const idx = myHand.indexOf(id);
+  if (idx >= 0) myHand.splice(idx, 1);
+
+  // Count cards per color
+  const counts = { R: 0, Y: 0, G: 0, B: 0, W: 0 };
+  myHand.forEach(cid => {
+    const card = Uno.CARDS[cid];
+    if (counts[card.color] !== undefined) counts[card.color]++;
+  });
+
+  // Populate hand preview
+  const handBox = $("colors-hand");
+  if (handBox) {
+    handBox.innerHTML = "";
+    if (myHand.length === 0) {
+      const emptyMsg = document.createElement("div");
+      emptyMsg.style.cssText = "color:var(--accent); font-weight:700; font-size:0.92rem; padding:10px;";
+      emptyMsg.textContent = currentLang === 'ar'
+        ? "🎯 آخر كارطة لحتي ! مابقات عندك حتى ورقة خرى."
+        : "🎯 Dernière carte jouée ! Tu n'as plus d'autre carte.";
+      handBox.appendChild(emptyMsg);
+    } else {
+      myHand.forEach(cid => {
+        const ce = cardEl(cid);
+        ce.style.cursor = "default";
+        ce.onclick = null;
+        handBox.appendChild(ce);
+      });
+    }
+  }
+
+  const countLabel = $("colors-hand-count");
+  if (countLabel) {
+    countLabel.textContent = currentLang === 'ar'
+      ? `${myHand.length} كوارط`
+      : `${myHand.length} carte${myHand.length > 1 ? "s" : ""}`;
+  }
+
+  // Populate color buttons with counts
+  const colors = ["Y", "R", "G", "B"]; // Oros, Copas, Bastos, Espadas
+  $("cp").innerHTML = colors.map(c => {
+    const s = SUIT[c];
+    const sName = currentLang === 'ar' ? SUIT_AR[s] : s.toUpperCase();
+    const n = counts[c];
+    const countTxt = currentLang === 'ar'
+      ? `${n} كوارط`
+      : `${n} carte${n > 1 ? "s" : ""}`;
+    const badgeCls = n > 0 ? "has-cards" : "no-cards";
+
+    return `
+      <button class="uno-cp-btn suit-${s}" data-c="${c}">
+        ${use(s, 'style="pointer-events:none; width:36px; height:36px;"')}
+        <span class="suit-label">${sName}</span>
+        <span class="uno-cp-btn-count ${badgeCls}">${countTxt}</span>
+      </button>
+    `;
+  }).join("");
+
+  $("colors").style.display = "flex";
+}
+
 async function humanPlay(id, color) {
   if (busy) return;
   const c = Uno.CARDS[id];
   if (c.color === "W" && !color) {
-    pending = id;
-    $("colors").style.display = "flex";
+    openColorPicker(id);
     return;
   }
   busy = true;
@@ -1378,11 +1555,11 @@ async function humanPlay(id, color) {
   try {
     if (typeof RondaSound !== 'undefined') {
       RondaSound.playSFX('slap');
-      if (c.value === "SOTA") {
+      if (c.value === "S" || c.value === "SOTA") {
         setTimeout(() => { RondaSound.playSFX('block'); RondaSound.say('skip'); }, 140);
-      } else if (c.value === "CABALLO") {
+      } else if (c.value === "R" || c.value === "CABALLO") {
         setTimeout(() => { RondaSound.playSFX('swoosh'); RondaSound.say('reverse'); }, 140);
-      } else if (c.value === "REY") {
+      } else if (c.value === "D2" || c.value === "REY") {
         setTimeout(() => RondaSound.say('draw2'), 140);
       } else if (c.value === "D4") {
         setTimeout(() => RondaSound.say('draw4'), 140);
@@ -1502,12 +1679,15 @@ $("uno").onclick = () => {
   render();
 };
 
-$("cp").innerHTML = ["R", "Y", "G", "B"].map(c => `
-  <button data-c="${c}">
-    ${use(SUIT[c], 'style="pointer-events:none"')}
-    <span>${SUIT[c].toUpperCase()}</span>
-  </button>
-`).join("");
+const closeColors = () => {
+  $("colors").style.display = "none";
+  pending = null;
+};
+const closeColorsBtn = $("btn-close-colors");
+if (closeColorsBtn) closeColorsBtn.onclick = closeColors;
+$("colors").onclick = (e) => {
+  if (e.target === $("colors")) closeColors();
+};
 
 $("cp").onclick = e => {
   const b = e.target.closest("button");

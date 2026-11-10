@@ -1,0 +1,25 @@
+{
+  "name": "ronda-maroc",
+  "version": "1.0.0",
+  "description": "Ronda Web & Uno Maroc — Jeux de cartes marocains traditionnels authentiques (الروندا وأونو المغربي) PWA",
+  "main": "ronda-engine.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test-ronda.js",
+    "audit": "node audit.js",
+    "test:browser": "node test-browser-click.js",
+    "test:rules": "node test-rules-modal.js",
+    "test:joker": "node test-joker-hand.js"
+  },
+  "keywords": [
+    "ronda",
+    "uno",
+    "morocco",
+    "darija",
+    "card-game",
+    "pwa",
+    "carta"
+  ],
+  "author": "Hicham Atlas",
+  "license": "MIT"
+}

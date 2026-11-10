@@ -210,10 +210,12 @@
           this.pendingCombos[0] = null;
         }
         // Si l'IA avait un combo en attente, elle l'annonce avant de jouer
-        if (this.pendingCombos[1]) {
+        if (p === 1 && this.pendingCombos[1]) {
           this.announce(1);
         }
-        this.pendingCombos = null;
+        if (this.pendingCombos && !this.pendingCombos[0] && !this.pendingCombos[1]) {
+          this.pendingCombos = null;
+        }
       }
       if (this.over) return this.drain();
 
@@ -236,7 +238,7 @@
     }
 
     endRound() {
-      const lc = this.lastCapturer;
+      const lc = this.lastCapturer != null ? this.lastCapturer : this.dealer;
       if (lc != null && this.table.length) {
         this.captured[lc].push(...this.table);
         this.emit('sweep', { player: lc, cards: this.table.map(c => c.id) });

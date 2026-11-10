@@ -260,9 +260,9 @@
     }
   }
 
-  function say(key) {
+  function say(key, overrideLang) {
     if (isMuted || volume <= 0 || voiceLang === 'none') return;
-    const lang = (voiceLang === 'fr') ? 'fr' : 'darija';
+    const lang = overrideLang || ((voiceLang === 'fr') ? 'fr' : 'darija');
     const langFiles = files[lang] || files.darija;
     const src = (langFiles && langFiles[key]) || (files[key]);
 
@@ -373,4 +373,7 @@
       if (typeof fn === 'function') listeners.push(fn);
     }
   };
+  if (typeof module === 'object' && module.exports) {
+    module.exports = root.RondaSound;
+  }
 })(typeof window !== 'undefined' ? window : globalThis);

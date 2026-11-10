@@ -16,7 +16,28 @@ function delay(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 
+const { startServer } = require('./server.js');
+
+function isServerRunning(port = 8080) {
+  return new Promise((resolve) => {
+    const req = http.get(`http://127.0.0.1:${port}/index.html`, (res) => {
+      resolve(res.statusCode === 200);
+    });
+    req.on('error', () => resolve(false));
+    req.setTimeout(500, () => {
+      req.destroy();
+      resolve(false);
+    });
+  });
+}
+
 async function run() {
+  let localServer = null;
+  if (!(await isServerRunning(8080))) {
+    console.log('Port 8080 not running, auto-starting server...');
+    localServer = await startServer(8080);
+  }
+
   console.log('Launching headless Chrome...');
   const chrome = spawn('google-chrome', [
     '--headless=new',
@@ -106,6 +127,7 @@ async function run() {
       returnByValue: true
     });
     console.log('Initial Uno hand state:', evalRes.result?.result?.value);
+    assert(evalRes.result?.result?.value?.handCardsCount > 0, 'Must load hand cards in index.html');
 
     // Test false card click (unplayable card intervention)
     console.log('Testing false card click (.card.no) - should intervene with error message and shake...');
@@ -212,6 +234,7 @@ async function run() {
       returnByValue: true
     });
     console.log('uno-maroc.html hand state:', unoStandaloneRes.result?.result?.value);
+    assert(unoStandaloneRes.result?.result?.value?.handCardsCount > 0, 'Must load hand cards in uno-maroc.html');
 
     // Test false card click on uno-maroc.html
     console.log('Testing false card click (.card.no) on uno-maroc.html...');
@@ -270,7 +293,8 @@ async function run() {
 
     ws.close();
   } finally {
-    chrome.kill('SIGTERM');
+    if (chrome) chrome.kill('SIGTERM');
+    if (localServer) localServer.close();
   }
 }
 
