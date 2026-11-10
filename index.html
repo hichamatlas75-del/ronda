@@ -389,8 +389,7 @@ button, select {
 }
 
 .mine.can-capture {
-  outline: 3px solid #38ef7d;
-  box-shadow: 0 0 14px rgba(56, 239, 125, 0.65);
+  /* No visual clues - player observes and thinks for themselves */
 }
 
 /* Last Played Card Highlight */
@@ -988,25 +987,74 @@ button, select {
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.5);
 }
 
-.card.ok {
-  cursor: pointer;
-  transform: translateY(-8px);
-  box-shadow: 0 0 0 2.5px var(--accent), 0 8px 18px rgba(0, 0, 0, 0.55);
-  z-index: 2;
+/* Casino Style Uno Hand: No visual hints or disabled cards */
+#uno-hand .card {
+  cursor: pointer !important;
+  opacity: 1 !important;
+  filter: none !important;
+  pointer-events: auto !important;
+  transform: translateY(0);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
   transition: transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.16s ease;
 }
 
-.card.ok:hover, .card.ok:focus-visible {
-  transform: translateY(-16px) scale(1.06);
-  box-shadow: 0 0 0 3px var(--accent), 0 14px 26px rgba(0, 0, 0, 0.7);
+#uno-hand .card:hover, #uno-hand .card:focus-visible {
+  transform: translateY(-12px) scale(1.05);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.65);
   z-index: 10;
 }
 
-.card.no {
-  filter: brightness(0.6) contrast(0.85);
-  opacity: 0.65;
-  cursor: not-allowed;
-  transform: none;
+#uno-hand .card:active {
+  transform: translateY(-4px) scale(0.98);
+}
+
+.card.ok, .card.no {
+  /* Internal classes retained for testing without spoiling gameplay */
+  outline: none;
+}
+
+/* False card shake animation on invalid play */
+@keyframes cardShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-7px) rotate(-4deg); }
+  40%, 80% { transform: translateX(7px) rotate(4deg); }
+}
+
+.card-shake {
+  animation: cardShake 0.42s ease-in-out !important;
+  box-shadow: 0 0 18px rgba(224, 72, 72, 0.95), 0 0 0 2.5px #e04848 !important;
+}
+
+.uno-toast-invalid {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(224, 72, 72, 0.96);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), 0 0 0 2px rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+  animation: toastPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes toastPop {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-12px) scale(0.85); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+.casino-deal-fly {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  border-radius: var(--card-radius);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.6);
+  transition: all cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 #uno-actions {
@@ -2035,6 +2083,91 @@ function bouncePile(player) {
   setTimeout(() => pile.classList.remove("bounce"), 250);
 }
 
+function animateCasinoCardFlight(fromEl, toEl, cardId, isBack = false, duration = 240, tilt = 0) {
+  return new Promise(resolve => {
+    if (!fromEl || !toEl) return resolve();
+    const r1 = fromEl.getBoundingClientRect();
+    const r2 = toEl.getBoundingClientRect();
+    if (!r1.width || !r2.width) return resolve();
+
+    const fly = (isBack || cardId == null) ? makeCardBack() : makeCardEl(cardId);
+    fly.className = "card casino-deal-fly";
+    fly.style.left = `${r1.left}px`;
+    fly.style.top = `${r1.top}px`;
+    fly.style.width = `${r1.width || 72}px`;
+    fly.style.height = `${r1.height || 108}px`;
+    fly.style.transition = `all ${duration}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+    fly.style.transform = `perspective(600px) rotateZ(${tilt}deg) scale(1.05)`;
+
+    document.body.appendChild(fly);
+    fly.getBoundingClientRect(); // force reflow
+
+    const targetW = r2.width || r1.width || 72;
+    const targetH = r2.height || r1.height || 108;
+    fly.style.left = `${r2.left}px`;
+    fly.style.top = `${r2.top}px`;
+    fly.style.width = `${targetW}px`;
+    fly.style.height = `${targetH}px`;
+    fly.style.transform = `perspective(600px) rotateZ(0deg) scale(1)`;
+
+    setTimeout(() => {
+      if (fly.parentNode) fly.parentNode.removeChild(fly);
+      resolve();
+    }, duration + 20);
+  });
+}
+
+async function animateCasinoTableDeal(tableCardIds) {
+  const deckEl = $("deck-card");
+  const tableEl = $("table-cards");
+  if (!deckEl || !tableEl) return;
+  const speed = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--anim-speed')) || 0;
+  if (speed <= 0) return;
+
+  tableEl.innerHTML = "";
+  for (let i = 0; i < tableCardIds.length; i++) {
+    const cid = tableCardIds[i];
+    try { RondaSound.playSFX('deal'); } catch(e) {}
+    await animateCasinoCardFlight(deckEl, tableEl, cid, false, 240, (i - 1.5) * 6);
+    const cardEl = makeCardEl(cid);
+    cardEl.classList.add("card-land");
+    tableEl.appendChild(cardEl);
+    await new Promise(r => setTimeout(r, 70));
+  }
+}
+
+async function animateCasinoHandDeal() {
+  const deckEl = $("deck-card");
+  const myHand = $("my-hand");
+  const oppHand = $("opp-hand");
+  if (!deckEl || !myHand || !oppHand || !g) return;
+  const speed = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--anim-speed')) || 0;
+  if (speed <= 0) return;
+
+  const v = g.view(0);
+  myHand.innerHTML = "";
+  oppHand.innerHTML = "";
+
+  for (let i = 0; i < 3; i++) {
+    // 1 to opponent
+    try { RondaSound.playSFX('deal'); } catch(e) {}
+    await animateCasinoCardFlight(deckEl, oppHand, null, true, 220, (Math.random() - 0.5) * 6);
+    oppHand.appendChild(makeCardBack());
+    await new Promise(r => setTimeout(r, 65));
+
+    // 1 to player
+    if (v.hand[i] != null) {
+      try { RondaSound.playSFX('deal'); } catch(e) {}
+      await animateCasinoCardFlight(deckEl, myHand, v.hand[i], false, 220, (Math.random() - 0.5) * 6);
+      const cEl = makeCardEl(v.hand[i], "mine");
+      cEl.onclick = () => humanPlay(v.hand[i]);
+      cEl.classList.add("card-land");
+      myHand.appendChild(cEl);
+    }
+    await new Promise(r => setTimeout(r, 65));
+  }
+}
+
 /* =====================================================================
    GAME CONTROLLER
    ===================================================================== */
@@ -2054,7 +2187,7 @@ function updateLvBadge() {
   $("lv-badge").textContent = names[lv] || lv;
 }
 
-function start(cfg = null) {
+async function start(cfg = null) {
   busy = false;
   gen++;
   log = [];
@@ -2068,7 +2201,19 @@ function start(cfg = null) {
 
   g = new Ronda.Game(gameConfig);
   saveGameState();
-  processEvents(g.drain(), false);
+  const initEvents = g.drain();
+  $("table-cards").innerHTML = "";
+  $("my-hand").innerHTML = "";
+  $("opp-hand").innerHTML = "";
+  $("deck-left").textContent = 30;
+  $("deck-card").classList.remove("empty");
+  $("score-me").textContent = g.scores[0];
+  $("score-opp").textContent = g.scores[1];
+  $("score-target").textContent = g.cfg.target;
+  $("round-num").textContent = g.round;
+  $("dealer-me").style.display = (g.dealer === 0) ? "inline-block" : "none";
+  $("dealer-opp").style.display = (g.dealer === 1) ? "inline-block" : "none";
+  await processEvents(initEvents, true);
   render();
   checkAITurn();
 }
@@ -2133,13 +2278,11 @@ function render() {
     table.appendChild(cEl);
   });
 
-  // Player Hand
+  // Player Hand - authentic cafe/casino style: no hints, player thinks for themselves!
   const myHand = $("my-hand");
   myHand.innerHTML = "";
   v.hand.forEach(id => {
-    const cardObj = Ronda.CARDS[id];
-    const canCap = Ronda.resolve(tableCardsObj, cardObj).cap.length > 0;
-    const cEl = makeCardEl(id, "mine" + (canCap ? " can-capture" : ""));
+    const cEl = makeCardEl(id, "mine");
     cEl.onclick = () => humanPlay(id);
     myHand.appendChild(cEl);
   });
@@ -2183,7 +2326,11 @@ async function processEvents(ev, animate = true) {
   RondaSound.handle(ev);
 
   for (const e of ev) {
-    if (e.type === "play") {
+    if (e.type === "round" && animate && e.table && e.table.length > 0) {
+      await animateCasinoTableDeal(e.table);
+    } else if (e.type === "deal" && animate) {
+      await animateCasinoHandDeal();
+    } else if (e.type === "play") {
       const c = Ronda.CARDS[e.card];
       lastPlayedCardId = e.card;
       const cName = currentLang === 'ar'
@@ -2801,6 +2948,120 @@ const UnoGameController = (() => {
     }, 1200);
   }
 
+  function showUnoInvalidToast(msg) {
+    const existing = document.querySelector(".uno-toast-invalid");
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+
+    const toast = document.createElement("div");
+    toast.className = "uno-toast-invalid";
+    toast.textContent = msg;
+    const arena = $("uno-arena") || $("uno-view") || document.body;
+    arena.style.position = "relative";
+    arena.appendChild(toast);
+    setTimeout(() => {
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 2500);
+  }
+
+  function onPlayerCardClick(id, cardNode, ev) {
+    if (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
+    if (!g || g.roundOver || g.over) return;
+
+    if (g.turn !== 0 || busy) {
+      const msg = currentLang === 'ar' ? "⏳ ماشي نوبتك دابا، تسنى الخصم يلعب !" : "⏳ Ce n'est pas ton tour !";
+      showUnoInvalidToast(msg);
+      try { RondaSound.playSFX('block'); } catch(e) {}
+      if (cardNode) {
+        cardNode.classList.remove("card-shake");
+        void cardNode.offsetWidth;
+        cardNode.classList.add("card-shake");
+        setTimeout(() => cardNode.classList.remove("card-shake"), 450);
+      }
+      return;
+    }
+
+    const v = g.view(0);
+    const isLegal = v.legal.includes(id);
+
+    if (isLegal) {
+      humanPlay(id);
+    } else {
+      try { RondaSound.playSFX('block'); } catch(e) {}
+      if (cardNode) {
+        cardNode.classList.remove("card-shake");
+        void cardNode.offsetWidth;
+        cardNode.classList.add("card-shake");
+        setTimeout(() => cardNode.classList.remove("card-shake"), 450);
+      }
+
+      let reason = "";
+      if (v.drawn != null) {
+        reason = currentLang === 'ar'
+          ? "⚠️ خاصك تلعب الكارطة اللي تيريتي ولا دوز !"
+          : "⚠️ Tu dois jouer la carte piochée ou passer !";
+      } else {
+        const sName = currentLang === 'ar' ? SUIT_AR[SUIT[v.color]] : SUIT[v.color];
+        reason = currentLang === 'ar'
+          ? `⚠️ مايمكنش تلعب هاد الكارطة ! خاصك نفس اللون (${sName})، نفس النمرة، ولا جوكير.`
+          : `⚠️ Carte non valide ! Joue du ${sName}, même numéro ou un Joker.`;
+      }
+      showUnoInvalidToast(reason);
+      $("uno-msg").innerHTML = log.join("<br>") + `<br><span style="color:#ff6b6b;font-weight:700;">${reason}</span>`;
+    }
+  }
+
+  async function animateCasinoDealUno() {
+    if (!g) return;
+    const v = g.view(0);
+    const pileEl = $("uno-pile");
+    const handEl = $("uno-hand");
+    const topSlotEl = $("uno-top-slot");
+    if (!pileEl || !handEl || !topSlotEl) return;
+
+    const animSpeed = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--anim-speed')) || 0;
+    if (animSpeed <= 0) return;
+
+    handEl.innerHTML = "";
+    topSlotEl.innerHTML = "";
+    $("uno-cur").innerHTML = "";
+
+    const numPlayers = v.counts.length;
+    for (let round = 0; round < 7; round++) {
+      for (let p = 1; p < numPlayers; p++) {
+        const opEl = $("uno-op-" + p);
+        if (opEl) {
+          try { RondaSound.playSFX('deal'); } catch(e) {}
+          await animateUnoFlight(pileEl, opEl, null, true, 160);
+          await delay(30);
+        }
+      }
+      if (v.hand[round] != null) {
+        try { RondaSound.playSFX('deal'); } catch(e) {}
+        await animateUnoFlight(pileEl, handEl, v.hand[round], false, 180);
+        const cardNode = cardEl(v.hand[round]);
+        cardNode.classList.add("card-land");
+        const ok = (v.turn === 0) && v.legal.includes(v.hand[round]);
+        cardNode.classList.add(ok ? "ok" : "no");
+        cardNode.onclick = (e) => onPlayerCardClick(v.hand[round], cardNode, e);
+        handEl.appendChild(cardNode);
+        await delay(35);
+      }
+    }
+
+    try { RondaSound.playSFX('deal'); } catch(e) {}
+    await animateUnoFlight(pileEl, topSlotEl, v.top, false, 240);
+    const topCardNode = cardEl(v.top);
+    topCardNode.classList.add("card-land");
+    topSlotEl.innerHTML = "";
+    topSlotEl.appendChild(topCardNode);
+    const curSuit = SUIT[v.color];
+    $("uno-cur").innerHTML = `<svg style="width:80%; height:80%;"><use href="#${curSuit}"/></svg>`;
+    await delay(80);
+  }
+
   function getCardSrc(c) {
     if (c.color === "W") return c.value === "D4" ? "cards/wild_d4.png" : "cards/wild.png";
     const s = SUIT[c.color];
@@ -2962,15 +3223,7 @@ const UnoGameController = (() => {
       const e = cardEl(id);
       const ok = mine && v.legal.includes(id);
       e.classList.add(ok ? "ok" : "no");
-      if (ok) {
-        e.onclick = (ev) => {
-          if (ev) {
-            ev.preventDefault();
-            ev.stopPropagation();
-          }
-          humanPlay(id);
-        };
-      }
+      e.onclick = (ev) => onPlayerCardClick(id, e, ev);
       h.appendChild(e);
     });
 
@@ -3098,7 +3351,7 @@ const UnoGameController = (() => {
     stepAI(gen);
   }
 
-  function start() {
+  async function start() {
     gen++;
     busy = false;
     log = [];
@@ -3110,6 +3363,9 @@ const UnoGameController = (() => {
       target: 500
     });
     say(g.drain());
+    render();
+    await animateCasinoDealUno();
+    render();
     loop();
   }
 
@@ -3166,10 +3422,14 @@ const UnoGameController = (() => {
       humanPlay(id, b.dataset.c);
     };
 
-    $("uno-btn-next-round").onclick = () => {
+    $("uno-btn-next-round").onclick = async () => {
       $("modal-uno-end").style.display = "none";
       g.nextRound();
       log = [];
+      say(g.drain());
+      render();
+      await animateCasinoDealUno();
+      render();
       loop();
     };
 

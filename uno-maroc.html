@@ -401,19 +401,58 @@ button:disabled {
   padding: 8px 4px;
 }
 
-.card.ok {
-  cursor: pointer;
-  transform: translateY(-8px);
-  box-shadow: 0 0 0 2.5px var(--accent), 0 8px 16px rgba(0,0,0,0.55);
+#hand .card {
+  opacity: 1 !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3) !important;
+  outline: none !important;
+  border-color: rgba(255,255,255,0.2) !important;
 }
 
-.card.ok:hover {
-  transform: translateY(-14px) scale(1.04);
+#hand .card.ok, #hand .card.no {
+  filter: none !important;
+  outline: none !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3) !important;
 }
 
-.card.no {
-  filter: brightness(0.6) contrast(0.9);
-  opacity: 0.75;
+#hand .card:hover {
+  transform: translateY(-10px) scale(1.03);
+}
+
+/* False card shake animation on invalid play */
+@keyframes cardShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-7px) rotate(-4deg); }
+  40%, 80% { transform: translateX(7px) rotate(4deg); }
+}
+
+.card-shake {
+  animation: cardShake 0.42s ease-in-out !important;
+  box-shadow: 0 0 18px rgba(224, 72, 72, 0.95), 0 0 0 2.5px #e04848 !important;
+}
+
+.uno-toast-invalid {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(224, 72, 72, 0.96);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), 0 0 0 2px rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+  animation: toastPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes toastPop {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-12px) scale(0.85); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 }
 
 /* Action Controls */
@@ -755,6 +794,116 @@ function showUnoShout(playerIdx) {
 const $ = id => document.getElementById(id);
 const use = (s, x) => `<svg ${x||""}><use href="#${s}"/></svg>`;
 
+function showUnoInvalidToast(msg) {
+  const existing = document.querySelector(".uno-toast-invalid");
+  if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+
+  const toast = document.createElement("div");
+  toast.className = "uno-toast-invalid";
+  toast.textContent = msg;
+  const arena = $("arena") || document.body;
+  arena.style.position = "relative";
+  arena.appendChild(toast);
+  setTimeout(() => {
+    if (toast.parentNode) toast.parentNode.removeChild(toast);
+  }, 2500);
+}
+
+function onPlayerCardClick(id, cardNode, ev) {
+  if (ev) {
+    ev.preventDefault();
+    ev.stopPropagation();
+  }
+  if (!g || g.roundOver || g.over) return;
+
+  if (g.turn !== 0 || busy) {
+    const msg = currentLang === 'ar' ? "⏳ ماشي نوبتك دابا، تسنى الخصم يلعب !" : "⏳ Ce n'est pas ton tour !";
+    showUnoInvalidToast(msg);
+    try { RondaSound.playSFX('block'); } catch(e) {}
+    if (cardNode) {
+      cardNode.classList.remove("card-shake");
+      void cardNode.offsetWidth;
+      cardNode.classList.add("card-shake");
+      setTimeout(() => cardNode.classList.remove("card-shake"), 450);
+    }
+    return;
+  }
+
+  const v = g.view(0);
+  const isLegal = v.legal.includes(id);
+
+  if (isLegal) {
+    humanPlay(id);
+  } else {
+    try { RondaSound.playSFX('block'); } catch(e) {}
+    if (cardNode) {
+      cardNode.classList.remove("card-shake");
+      void cardNode.offsetWidth;
+      cardNode.classList.add("card-shake");
+      setTimeout(() => cardNode.classList.remove("card-shake"), 450);
+    }
+
+    let reason = "";
+    if (v.drawn != null) {
+      reason = currentLang === 'ar'
+        ? "⚠️ خاصك تلعب الكارطة اللي تيريتي ولا دوز !"
+        : "⚠️ Tu dois jouer la carte piochée ou passer !";
+    } else {
+      const sName = currentLang === 'ar' ? SUIT_AR[SUIT[v.color]] : SUIT[v.color];
+      reason = currentLang === 'ar'
+        ? `⚠️ مايمكنش تلعب هاد الكارطة ! خاصك نفس اللون (${sName})، نفس النمرة، ولا جوكير.`
+        : `⚠️ Carte non valide ! Joue du ${sName}, même numéro ou un Joker.`;
+    }
+    showUnoInvalidToast(reason);
+    $("msg").innerHTML = log.join("<br>") + `<br><span style="color:#ff6b6b;font-weight:700;">${reason}</span>`;
+  }
+}
+
+async function animateCasinoDealUno() {
+  if (!g) return;
+  const v = g.view(0);
+  const pileEl = $("pile");
+  const handEl = $("hand");
+  const topSlotEl = $("top");
+  if (!pileEl || !handEl || !topSlotEl) return;
+
+  handEl.innerHTML = "";
+  topSlotEl.innerHTML = "";
+  $("cur").innerHTML = "";
+
+  const numPlayers = v.counts.length;
+  for (let round = 0; round < 7; round++) {
+    for (let p = 1; p < numPlayers; p++) {
+      const opEl = $("op-" + p);
+      if (opEl) {
+        try { RondaSound.playSFX('deal'); } catch(e) {}
+        await animateUnoFlight(pileEl, opEl, null, true, 160);
+        await delay(30);
+      }
+    }
+    if (v.hand[round] != null) {
+      try { RondaSound.playSFX('deal'); } catch(e) {}
+      await animateUnoFlight(pileEl, handEl, v.hand[round], false, 180);
+      const cardNode = cardEl(v.hand[round]);
+      cardNode.classList.add("card-land");
+      const ok = (v.turn === 0) && v.legal.includes(v.hand[round]);
+      cardNode.classList.add(ok ? "ok" : "no");
+      cardNode.onclick = (e) => onPlayerCardClick(v.hand[round], cardNode, e);
+      handEl.appendChild(cardNode);
+      await delay(35);
+    }
+  }
+
+  try { RondaSound.playSFX('deal'); } catch(e) {}
+  await animateUnoFlight(pileEl, topSlotEl, v.top, false, 240);
+  const topCardNode = cardEl(v.top);
+  topCardNode.classList.add("card-land");
+  topSlotEl.innerHTML = "";
+  topSlotEl.appendChild(topCardNode);
+  $("cur").innerHTML = use(SUIT[v.color]);
+  await delay(80);
+}
+
 function getCardSrc(c) {
   if (c.color === "W") return c.value === "D4" ? "cards/wild_d4.png" : "cards/wild.png";
   const s = SUIT[c.color];
@@ -920,15 +1069,7 @@ function render(thinkingPlayer = null) {
     const e = cardEl(id);
     const ok = mine && v.legal.includes(id);
     e.classList.add(ok ? "ok" : "no");
-    if (ok) {
-      e.onclick = (ev) => {
-        if (ev) {
-          ev.preventDefault();
-          ev.stopPropagation();
-        }
-        humanPlay(id);
-      };
-    }
+    e.onclick = (ev) => onPlayerCardClick(id, e, ev);
     h.appendChild(e);
   });
 
@@ -1105,14 +1246,18 @@ $("cp").onclick = e => {
   humanPlay(id, b.dataset.c);
 };
 
-$("nx").onclick = () => {
+$("nx").onclick = async () => {
   $("end").style.display = "none";
   g.nextRound();
   log = [];
+  say(g.drain());
+  render();
+  await animateCasinoDealUno();
+  render();
   loop();
 };
 
-function start() {
+async function start() {
   gen++;
   busy = false;
   log = [];
@@ -1124,6 +1269,9 @@ function start() {
     target: 500
   });
   say(g.drain());
+  render();
+  await animateCasinoDealUno();
+  render();
   loop();
 }
 

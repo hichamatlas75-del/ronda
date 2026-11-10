@@ -1,5 +1,6 @@
 const { spawn } = require('child_process');
 const http = require('http');
+const assert = require('assert');
 
 async function getJson(url) {
   return new Promise((resolve, reject) => {
@@ -106,6 +107,29 @@ async function run() {
     });
     console.log('Initial Uno hand state:', evalRes.result?.result?.value);
 
+    // Test false card click (unplayable card intervention)
+    console.log('Testing false card click (.card.no) - should intervene with error message and shake...');
+    let falseClickRes = await send('Runtime.evaluate', {
+      expression: `(() => {
+        const noCard = document.querySelector('#uno-hand .card.no');
+        if (!noCard) return { skipped: true };
+        const id = noCard.getAttribute('data-id');
+        noCard.click();
+        const toast = document.querySelector('.uno-toast-invalid');
+        const hasShake = noCard.classList.contains('card-shake');
+        const msg = document.getElementById('uno-msg').innerText;
+        return {
+          id,
+          hasShake,
+          toastText: toast ? toast.innerText : null,
+          msg
+        };
+      })()`,
+      returnByValue: true
+    });
+    console.log('False card click result:', falseClickRes.result?.result?.value);
+    assert(falseClickRes.result?.result?.value?.skipped || falseClickRes.result?.result?.value?.toastText, 'Intervention message should appear on invalid move');
+
     // Click playable card
     console.log('Simulating click on first playable card (.card.ok)...');
     let clickRes = await send('Runtime.evaluate', {
@@ -188,6 +212,29 @@ async function run() {
       returnByValue: true
     });
     console.log('uno-maroc.html hand state:', unoStandaloneRes.result?.result?.value);
+
+    // Test false card click on uno-maroc.html
+    console.log('Testing false card click (.card.no) on uno-maroc.html...');
+    let standaloneFalseClick = await send('Runtime.evaluate', {
+      expression: `(() => {
+        const noCard = document.querySelector('#hand .card.no');
+        if (!noCard) return { skipped: true };
+        const id = noCard.getAttribute('data-id');
+        noCard.click();
+        const toast = document.querySelector('.uno-toast-invalid');
+        const hasShake = noCard.classList.contains('card-shake');
+        const msg = document.getElementById('msg').innerText;
+        return {
+          id,
+          hasShake,
+          toastText: toast ? toast.innerText : null,
+          msg
+        };
+      })()`,
+      returnByValue: true
+    });
+    console.log('uno-maroc.html false card click result:', standaloneFalseClick.result?.result?.value);
+    assert(standaloneFalseClick.result?.result?.value?.skipped || standaloneFalseClick.result?.result?.value?.toastText, 'Intervention message should appear on invalid move in uno-maroc.html');
 
     let standaloneClick = await send('Runtime.evaluate', {
       expression: `(() => {
