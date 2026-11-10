@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ronda-cache-v6';
+const CACHE_NAME = 'ronda-cache-v7';
 
 const CARD_ASSETS = [];
 for (let i = 0; i < 40; i++) {
@@ -32,16 +32,37 @@ const ASSETS = [
   './audio/darija/bount.mp3',
   './audio/darija/win.mp3',
   './audio/darija/lose.mp3',
+  './audio/darija/uno.mp3',
+  './audio/darija/uno_missed.mp3',
+  './audio/darija/skip.mp3',
+  './audio/darija/reverse.mp3',
+  './audio/darija/draw2.mp3',
+  './audio/darija/draw4.mp3',
+  './audio/darija/wild.mp3',
+  './audio/darija/uno_win.mp3',
+  './audio/darija/uno_lose.mp3',
   './audio/fr/ronda.mp3',
   './audio/fr/tringa.mp3',
   './audio/fr/missa.mp3',
   './audio/fr/bount.mp3',
   './audio/fr/win.mp3',
   './audio/fr/lose.mp3',
+  './audio/fr/uno.mp3',
+  './audio/fr/uno_missed.mp3',
+  './audio/fr/skip.mp3',
+  './audio/fr/reverse.mp3',
+  './audio/fr/draw2.mp3',
+  './audio/fr/draw4.mp3',
+  './audio/fr/wild.mp3',
+  './audio/fr/uno_win.mp3',
+  './audio/fr/uno_lose.mp3',
   './audio/sfx/slap.mp3',
   './audio/sfx/deal.mp3',
   './audio/sfx/capture.mp3',
   './audio/sfx/chime.mp3',
+  './audio/sfx/swoosh.mp3',
+  './audio/sfx/block.mp3',
+  './audio/sfx/alert.mp3',
   ...CARD_ASSETS
 ];
 

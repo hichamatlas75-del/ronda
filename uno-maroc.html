@@ -668,20 +668,39 @@ function say(ev) {
       const c = Uno.CARDS[e.card];
       const sDesc = c.color === "W" ? (currentLang === 'ar' ? " → " + SUIT_AR[SUIT[e.color]] : " → " + SUIT[e.color]) : "";
       log.push(currentLang === 'ar' ? `${pName} لعب ${label(e.card)}${sDesc}` : `${pName} joue ${label(e.card)}${sDesc}.`);
-      try { RondaSound.play('slap'); } catch(err) {}
+      try {
+        RondaSound.playSFX('slap');
+        if (c.value === "SOTA") {
+          setTimeout(() => { RondaSound.playSFX('block'); RondaSound.say('skip'); }, 140);
+        } else if (c.value === "CABALLO") {
+          setTimeout(() => { RondaSound.playSFX('swoosh'); RondaSound.say('reverse'); }, 140);
+        } else if (c.value === "REY") {
+          setTimeout(() => RondaSound.say('draw2'), 140);
+        } else if (c.value === "D4") {
+          setTimeout(() => RondaSound.say('draw4'), 140);
+        } else if (c.value === "W") {
+          setTimeout(() => RondaSound.say('wild'), 140);
+        }
+      } catch(err) {}
     } else if (e.type === "draw" && e.count) {
       if (e.player === 0) {
         log.push(currentLang === 'ar' ? `تيريتي ${e.count} كارطة` : `Tu pioches ${e.count} carte${e.count > 1 ? "s" : ""}.`);
       } else {
         log.push(currentLang === 'ar' ? `${pName} تيرى ${e.count} كارطة` : `${pName} pioche ${e.count} carte${e.count > 1 ? "s" : ""}.`);
       }
-      try { RondaSound.play('deal'); } catch(err) {}
+      try { RondaSound.playSFX('deal'); } catch(err) {}
     } else if (e.type === "uno") {
       log.push(currentLang === 'ar' ? `${pName} : أونو !` : `${pName} : UNO !`);
-      try { RondaSound.playVoice('ronda'); } catch(err) {}
+      try {
+        RondaSound.playSFX('alert');
+        setTimeout(() => RondaSound.say('uno'), 100);
+      } catch(err) {}
     } else if (e.type === "unoMissed" && e.player === 0) {
       log.push(currentLang === 'ar' ? "نسيتي أونو ! : +2 كارطات عقوبة" : "Tu as oublié UNO ! : +2 cartes");
-      try { RondaSound.play('bount'); } catch(err) {}
+      try {
+        RondaSound.playSFX('block');
+        setTimeout(() => RondaSound.say('uno_missed'), 120);
+      } catch(err) {}
     } else if (e.type === "reverse") {
       log.push(currentLang === 'ar' ? "تبدلات الدورة ⇄" : "Changement de sens ⇄");
     } else if (e.type === "skip") {
@@ -695,14 +714,20 @@ function say(ev) {
       $("ep").textContent = "+" + e.points + " pts · " + e.scores.map((s, i) => (currentLang === 'ar' ? NAMES_AR[i] : NAMES[i]) + " " + s).join(" · ");
       $("nx").style.display = "";
       $("end").style.display = "flex";
-      try { RondaSound.play(e.winner === 0 ? 'win' : 'lose'); } catch(err) {}
+      try {
+        RondaSound.playSFX('chime');
+        setTimeout(() => RondaSound.say(e.winner === 0 ? 'uno_win' : 'uno_lose'), 200);
+      } catch(err) {}
     } else if (e.type === "gameOver") {
       const wName = currentLang === 'ar' ? NAMES_AR[e.winner] : NAMES[e.winner];
       $("et").textContent = e.winner === 0 
         ? (currentLang === 'ar' ? "ربحتي الطرح كامل ! 🏆" : "Tu as gagné la partie ! 🏆") 
         : (currentLang === 'ar' ? `${wName} ربح الطرح 🏆` : `${wName} gagne la partie`);
       $("nx").style.display = "none";
-      try { RondaSound.play(e.winner === 0 ? 'win' : 'lose'); } catch(err) {}
+      try {
+        RondaSound.playSFX('chime');
+        setTimeout(() => RondaSound.say(e.winner === 0 ? 'uno_win' : 'uno_lose'), 200);
+      } catch(err) {}
     }
   }
   log = log.slice(-3);
@@ -773,8 +798,18 @@ function humanPlay(id, color) {
   }
   try {
     if (typeof RondaSound !== 'undefined') {
-      if (typeof RondaSound.play === 'function') RondaSound.play('slap');
-      else if (typeof RondaSound.playSFX === 'function') RondaSound.playSFX('slap');
+      RondaSound.playSFX('slap');
+      if (c.value === "SOTA") {
+        setTimeout(() => { RondaSound.playSFX('block'); RondaSound.say('skip'); }, 140);
+      } else if (c.value === "CABALLO") {
+        setTimeout(() => { RondaSound.playSFX('swoosh'); RondaSound.say('reverse'); }, 140);
+      } else if (c.value === "REY") {
+        setTimeout(() => RondaSound.say('draw2'), 140);
+      } else if (c.value === "D4") {
+        setTimeout(() => RondaSound.say('draw4'), 140);
+      } else if (c.value === "W") {
+        setTimeout(() => RondaSound.say('wild'), 140);
+      }
     }
   } catch(e) {}
   say(g.play(0, id, color || null, unoOn));
@@ -817,7 +852,10 @@ $("pass").onclick = () => {
 $("uno").onclick = () => {
   unoOn = !unoOn;
   if (unoOn) {
-    try { RondaSound.playVoice('ronda'); } catch(err) {}
+    try {
+      RondaSound.playSFX('alert');
+      setTimeout(() => RondaSound.say('uno'), 100);
+    } catch(err) {}
   }
   render();
 };

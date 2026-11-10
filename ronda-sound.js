@@ -65,7 +65,16 @@
       missa: 'audio/darija/missa.mp3',
       bount: 'audio/darija/bount.mp3',
       win: 'audio/darija/win.mp3',
-      lose: 'audio/darija/lose.mp3'
+      lose: 'audio/darija/lose.mp3',
+      uno: 'audio/darija/uno.mp3',
+      uno_missed: 'audio/darija/uno_missed.mp3',
+      skip: 'audio/darija/skip.mp3',
+      reverse: 'audio/darija/reverse.mp3',
+      draw2: 'audio/darija/draw2.mp3',
+      draw4: 'audio/darija/draw4.mp3',
+      wild: 'audio/darija/wild.mp3',
+      uno_win: 'audio/darija/uno_win.mp3',
+      uno_lose: 'audio/darija/uno_lose.mp3'
     },
     fr: {
       ronda: 'audio/fr/ronda.mp3',
@@ -73,13 +82,25 @@
       missa: 'audio/fr/missa.mp3',
       bount: 'audio/fr/bount.mp3',
       win: 'audio/fr/win.mp3',
-      lose: 'audio/fr/lose.mp3'
+      lose: 'audio/fr/lose.mp3',
+      uno: 'audio/fr/uno.mp3',
+      uno_missed: 'audio/fr/uno_missed.mp3',
+      skip: 'audio/fr/skip.mp3',
+      reverse: 'audio/fr/reverse.mp3',
+      draw2: 'audio/fr/draw2.mp3',
+      draw4: 'audio/fr/draw4.mp3',
+      wild: 'audio/fr/wild.mp3',
+      uno_win: 'audio/fr/uno_win.mp3',
+      uno_lose: 'audio/fr/uno_lose.mp3'
     },
     sfx: {
       slap: 'audio/sfx/slap.mp3',
       deal: 'audio/sfx/deal.mp3',
       capture: 'audio/sfx/capture.mp3',
-      chime: 'audio/sfx/chime.mp3'
+      chime: 'audio/sfx/chime.mp3',
+      swoosh: 'audio/sfx/swoosh.mp3',
+      block: 'audio/sfx/block.mp3',
+      alert: 'audio/sfx/alert.mp3'
     }
   };
 
@@ -91,7 +112,16 @@
       missa: 'Missa !',
       bount: 'Bount !',
       win: 'Bravo ! Tu as gagné la partie !',
-      lose: 'L\'adversaire a gagné la partie.'
+      lose: 'L\'adversaire a gagné la partie.',
+      uno: 'UNO !',
+      uno_missed: 'Tu as oublié UNO ! Deux cartes de pénalité !',
+      skip: 'Passe ton tour !',
+      reverse: 'Changement de sens !',
+      draw2: 'Plus deux cartes !',
+      draw4: 'Joker plus quatre !',
+      wild: 'Changement de couleur !',
+      uno_win: 'Bravo ! Tu as posé toutes tes cartes et gagné la partie de UNO !',
+      uno_lose: 'L\'adversaire a posé toutes ses cartes et gagne la partie de UNO.'
     },
     darija: {
       ronda: ['روندا !', 'روندا حية !', 'عندي روندا ناضية !'],
@@ -99,7 +129,16 @@
       missa: ['ميسا قرعة !', 'ميسا ! مسحت الطابلة !', 'الطابلة نقية ! ميسا !'],
       bount: ['بونت فالراس !', 'بونت ! رديتها ليك تما !', 'بونت فالوجه !'],
       win: ['مبروك عليك ! ربحتي الطرح يا الحريف !', 'طيرتي ليه الماتش، معلم ديال الروندا نيت !'],
-      lose: ['الخصم دا الطرح، عاود طرح أخور وعوضها !', 'معليش، الطرح الجاي ديالك ان شاء الله !']
+      lose: ['الخصم دا الطرح، عاود طرح أخور وعوضها !', 'معليش، الطرح الجاي ديالك ان شاء الله !'],
+      uno: ['أونو !', 'أونو ناضية !'],
+      uno_missed: ['نسيتي أونو ! كول جوج كارطات عقوبة !'],
+      skip: ['دوز تورك !', 'سوطي تورك !'],
+      reverse: ['قلب الدورة !', 'تبدلات الدورة !'],
+      draw2: ['كول جوج كارطات !', 'زيد جوج كارطات !'],
+      draw4: ['جوكير كول ربعة !', 'ربعة دالكارطات عقوبة !'],
+      wild: ['بدل اللون !', 'جوكير !'],
+      uno_win: ['مبروك عليك ! كملتي كارطتك وربحتي طرح أونو !'],
+      uno_lose: ['الخصم كمل كارطتو وربح طرح أونو !']
     }
   };
 
@@ -203,20 +242,21 @@
   function playSFX(key) {
     if (isMuted || volume <= 0) return;
     const file = files.sfx && files.sfx[key];
-    if (file) {
-      playAudioFile(file, 1.0).then(played => {
-        if (!played) {
-          if (key === 'slap') synthSlap();
-          else if (key === 'deal') synthDeal();
-          else if (key === 'capture') synthCapture();
-          else if (key === 'chime') [523, 659, 784, 1046].forEach((f, i) => synthTone(f, 0.22, i * 0.12));
-        }
-      });
-    } else {
+    const synthFallback = () => {
       if (key === 'slap') synthSlap();
       else if (key === 'deal') synthDeal();
       else if (key === 'capture') synthCapture();
       else if (key === 'chime') [523, 659, 784, 1046].forEach((f, i) => synthTone(f, 0.22, i * 0.12));
+      else if (key === 'swoosh') [600, 480, 360, 240].forEach((f, i) => synthTone(f, 0.08, i * 0.04, 0.3));
+      else if (key === 'block') [220, 160].forEach((f, i) => synthTone(f, 0.12, i * 0.08, 0.4));
+      else if (key === 'alert') [880, 1175].forEach((f, i) => synthTone(f, 0.18, i * 0.1, 0.35));
+    };
+    if (file) {
+      playAudioFile(file, 1.0).then(played => {
+        if (!played) synthFallback();
+      });
+    } else {
+      synthFallback();
     }
   }
 
@@ -290,7 +330,7 @@
     playSFX,
     play: (k) => {
       try {
-        if (['slap', 'deal', 'capture', 'chime'].includes(k)) {
+        if (['slap', 'deal', 'capture', 'chime', 'swoosh', 'block', 'alert'].includes(k)) {
           return playSFX(k);
         }
         return say(k);
