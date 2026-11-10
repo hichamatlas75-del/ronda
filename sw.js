@@ -1,5 +1,5 @@
 /* sw.js — Service Worker pour Ronda PWA (mode hors-ligne complet) */
-const CACHE_NAME = 'ronda-cache-v3';
+const CACHE_NAME = 'ronda-cache-v4';
 
 const CARD_ASSETS = [];
 for (let i = 0; i < 40; i++) {
