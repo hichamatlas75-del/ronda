@@ -67,5 +67,9 @@ console.log('--- 7. Testing Browser Click & Audio Integration (Headless Chrome) 
 const { execSync } = require('child_process');
 execSync('node test-browser-click.js', { stdio: 'inherit' });
 
+console.log('--- 8. Testing Rules Modal & Interactive Trial Mode (Headless Chrome) ---');
+execSync('node test-rules-modal.js', { stdio: 'inherit' });
+
 console.log('=== ALL TESTS PASSED! ===');
+
 

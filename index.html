@@ -730,7 +730,7 @@ button, select {
 /* Deck Showcase in Rules */
 .cards-showcase {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
   gap: 6px;
   background: rgba(0, 0, 0, 0.25);
   padding: 8px;
@@ -1442,13 +1442,20 @@ button, select {
       <button class="modal-close" id="btn-close-rules">✕</button>
     </div>
 
+    <!-- Game Switcher inside Rules Modal -->
+    <div class="tab-row" id="rules-game-tabs" style="border-bottom: 2px solid rgba(255,255,255,0.15); padding-bottom: 6px;">
+      <button class="tab-btn active" id="modal-tab-ronda" style="flex:1;">🎴 <span data-i18n="tabRonda">Ronda Maroc</span></button>
+      <button class="tab-btn" id="modal-tab-uno" style="flex:1;">🃏 <span data-i18n="tabUno">Uno Maroc</span></button>
+    </div>
+
+    <!-- Mode Switcher: Text vs Trial -->
     <div class="tab-row">
       <button class="tab-btn active" id="tab-rules-txt" data-i18n="tabRules">Règles complètes</button>
       <button class="tab-btn" id="tab-rules-trial" data-i18n="tabTrial">Mode d'essai interactif</button>
     </div>
 
-    <!-- Tab 1: Rules text -->
-    <div id="panel-rules-txt" style="display:flex; flex-direction:column; gap:12px; font-size:0.92rem; line-height:1.5;">
+    <!-- Tab 1A: Ronda Rules text -->
+    <div id="panel-rules-txt-ronda" style="display:flex; flex-direction:column; gap:12px; font-size:0.92rem; line-height:1.5;">
       <div>
         <h3 style="color:var(--accent); margin:4px 0;" data-i18n="ruleCards">1. Le jeu de 40 cartes espagnoles authentiques</h3>
         <p data-i18n="ruleCardsDesc">Ronda se joue avec les 40 cartes espagnoles traditionnelles réparties en 4 enseignes : Copas (الكواص), Oros (الدينار), Bastos (الزرواطة), Espadas (السيوف). Chaque enseigne comprend les cartes 1 à 7, puis 10 (Sota/الشيخ), 11 (Caballo/العود) et 12 (Rey/الملك). <b>Il n'y a pas de 8 ni de 9 !</b> La suite saute directement de 7 à 10.</p>
@@ -1487,9 +1494,48 @@ button, select {
       </div>
     </div>
 
+    <!-- Tab 1B: Uno Rules text -->
+    <div id="panel-rules-txt-uno" style="display:none; flex-direction:column; gap:12px; font-size:0.92rem; line-height:1.5;">
+      <div>
+        <h3 style="color:var(--accent); margin:4px 0;" data-i18n="unoRuleCards">1. Le jeu de 108 cartes Uno Maroc (Carta Sghira)</h3>
+        <p data-i18n="unoRuleCardsDesc">Uno Maroc se joue avec 108 cartes authentiques aux 4 enseignes marocaines traditionnelles : Copas (الكواص), Oros (الذهب), Bastos (الزرواطة), Espadas (السيوف). Chaque enseigne comprend les chiffres 0 à 9, ainsi que les cartes d'action spéciales : Sota (الشيخ 10 / ⊘ Passe), Caballo (العود 11 / ⇄ Sens), Rey (الملك 12 / +2), plus 8 Jokers universels (4 Jokers Changement de couleur ★ et 4 Jokers Super +4).</p>
+        
+        <div class="cards-showcase">
+          <div class="showcase-item"><img src="cards/oros_0.png" alt="0 Oros"><span data-i18n="showcaseUno0">0 Oros</span></div>
+          <div class="showcase-item"><img src="cards/6.png" alt="7 Copas"><span data-i18n="showcaseUno7">7 Copas</span></div>
+          <div class="showcase-item"><img src="cards/27.png" alt="Sota Bastos"><span data-i18n="showcaseUnoSota">10 Sota ⊘</span></div>
+          <div class="showcase-item"><img src="cards/38.png" alt="Caballo Espadas"><span data-i18n="showcaseUnoCaballo">11 Caballo ⇄</span></div>
+          <div class="showcase-item"><img src="cards/9.png" alt="Rey Copas"><span data-i18n="showcaseUnoRey">12 Rey +2</span></div>
+          <div class="showcase-item"><img src="cards/wild.png" alt="Joker Wild"><span data-i18n="showcaseUnoWild">Joker ★</span></div>
+          <div class="showcase-item"><img src="cards/wild_d4.png" alt="Joker +4"><span data-i18n="showcaseUnoD4">Joker +4</span></div>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="color:var(--accent); margin:4px 0;" data-i18n="unoRulePlay">2. Comment jouer à ton tour ?</h3>
+        <p data-i18n="unoRulePlayDesc">À chaque tour, tu dois poser une carte qui correspond à la carte visible sur le tas central : soit par la <b>même enseigne/couleur</b>, soit par le <b>même numéro</b>, soit un <b>Joker</b>.<br>Si tu ne possèdes aucune carte jouable, clique sur le paquet pour <b>piocher une carte</b>. Si elle est jouable, tu peux la poser immédiatement, sinon clique sur <b>Passer</b>.</p>
+      </div>
+
+      <div>
+        <h3 style="color:var(--accent); margin:4px 0;" data-i18n="unoRuleSpecial">3. Les cartes d'action spéciales marocaines</h3>
+        <p data-i18n="unoRuleSpecialDesc">• <b>Sota / 10 (⊘ PASSE)</b> : Le joueur suivant saute son tour.<br>• <b>Caballo / 11 (⇄ SENS)</b> : Inverse immédiatement le sens de la rotation du jeu.<br>• <b>Rey / 12 (+2 CARTES)</b> : Le joueur suivant pioche 2 cartes et perd son tour.<br>• <b>Joker ★ (Wild)</b> : Jouable à tout moment, permet de choisir la prochaine couleur du jeu.<br>• <b>Joker +4 (Super Wild)</b> : Permet de choisir la couleur ET force le joueur suivant à piocher 4 cartes et passer son tour !</p>
+      </div>
+
+      <div>
+        <h3 style="color:var(--accent); margin:4px 0;" data-i18n="unoRuleUno">4. La règle d'or : Annoncer 'UNO !'</h3>
+        <p data-i18n="unoRuleUnoDesc">Dès qu'il ne te reste plus qu'<b>une seule carte en main</b>, tu dois impérativement cliquer sur le bouton <b>UNO !</b> avant de poser ton avant-dernière carte.<br>⚠️ <b>Pénalité</b> : Si tu oublies de crier UNO avant de jouer, tu reçois automatiquement <b>+2 cartes de pénalité</b> dans ta main !</p>
+      </div>
+
+      <div>
+        <h3 style="color:var(--accent); margin:4px 0;" data-i18n="unoRuleScoring">5. Fin de manche et Objectif 500 points</h3>
+        <p data-i18n="unoRuleScoringDesc">Le premier joueur à se débarrasser de toutes ses cartes remporte la manche. Il empoche tous les points des cartes restant dans les mains des adversaires (Chiffres = valeur faciale, Sota/Caballo/Rey = 20 pts, Jokers = 50 pts). Le premier à atteindre <b>500 points</b> remporte la partie complète !</p>
+      </div>
+    </div>
+
     <!-- Tab 2: Interactive Trial Mode -->
     <div id="panel-rules-trial" style="display:none; flex-direction:column; gap:12px;">
-      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+      <!-- Ronda Trial Steps -->
+      <div id="trial-steps-ronda" style="display:flex; gap:6px; flex-wrap:wrap;">
         <button class="btn-secondary" id="trial-step-suite" style="font-size:0.82rem;">1. Suite 7-10-11</button>
         <button class="btn-secondary" id="trial-step-bount" style="font-size:0.82rem;">2. Bount</button>
         <button class="btn-secondary" id="trial-step-missa" style="font-size:0.82rem;">3. Missa</button>
@@ -1497,14 +1543,28 @@ button, select {
         <button class="btn-secondary" id="trial-step-tringa" style="font-size:0.82rem;">5. Tringa</button>
       </div>
 
+      <!-- Uno Trial Steps -->
+      <div id="trial-steps-uno" style="display:none; gap:6px; flex-wrap:wrap;">
+        <button class="btn-secondary" id="trial-step-uno-match" style="font-size:0.82rem;">1. Couleur ou Numéro</button>
+        <button class="btn-secondary" id="trial-step-uno-sota" style="font-size:0.82rem;">2. Sota ⊘</button>
+        <button class="btn-secondary" id="trial-step-uno-caballo" style="font-size:0.82rem;">3. Caballo ⇄</button>
+        <button class="btn-secondary" id="trial-step-uno-rey" style="font-size:0.82rem;">4. Rey +2</button>
+        <button class="btn-secondary" id="trial-step-uno-wild" style="font-size:0.82rem;">5. Joker +4</button>
+        <button class="btn-secondary" id="trial-step-uno-shout" style="font-size:0.82rem;">6. Bouton UNO !</button>
+      </div>
+
       <div class="trial-step-desc" id="trial-instructions"></div>
 
       <div id="trial-board">
-        <div style="text-align:center; font-size:0.8rem; opacity:0.8;" data-i18n="tableCards">Cartes sur la table</div>
+        <div style="text-align:center; font-size:0.8rem; opacity:0.8;" id="trial-table-lbl" data-i18n="tableCards">Cartes sur la table</div>
         <div class="trial-cards-row" id="trial-table-row"></div>
 
-        <div style="text-align:center; font-size:0.8rem; opacity:0.8; margin-top:8px;" data-i18n="yourHand">Ta main (clique pour jouer)</div>
+        <div style="text-align:center; font-size:0.8rem; opacity:0.8; margin-top:8px;" id="trial-hand-lbl" data-i18n="yourHand">Ta main (clique pour jouer)</div>
         <div class="trial-cards-row" id="trial-hand-row"></div>
+
+        <div id="trial-uno-btn-wrap" style="display:none; justify-content:center; margin-top:8px;">
+          <button class="btn-primary" id="trial-uno-btn" style="font-size:1.1rem; padding:8px 24px;">UNO !</button>
+        </div>
       </div>
 
       <div id="trial-feedback" style="font-size:0.88rem; font-weight:600; text-align:center; min-height:2em; color:var(--accent);"></div>
@@ -1701,7 +1761,24 @@ const I18N = {
     ruleBonuses: "4. Les Bonus de Table : Bount et Missa",
     ruleBonusesDesc: "• <b>Bount (+1 pt)</b> : Prendre immédiatement la carte que l'adversaire vient de poser.<br>• <b>Missa (+1 pt)</b> : Vider complètement la table lors d'une capture (table propre).",
     ruleScoring: "5. Décompte de fin de manche",
-    ruleScoringDesc: "À la fin des 36 cartes jouées, les cartes restantes sur la table vont au dernier joueur ayant fait une prise. Chaque joueur compte ses cartes gagnées : chaque carte au-delà de 20 rapporte 1 point (ex: 24 cartes = +4 points). Le premier à atteindre le score cible (21 ou 41) gagne la partie !"
+    ruleScoringDesc: "À la fin des 36 cartes jouées, les cartes restantes sur la table vont au dernier joueur ayant fait une prise. Chaque joueur compte ses cartes gagnées : chaque carte au-delà de 20 rapporte 1 point (ex: 24 cartes = +4 points). Le premier à atteindre le score cible (21 ou 41) gagne la partie !",
+    unoRuleCards: "1. Le jeu de 108 cartes Uno Maroc (Carta Sghira)",
+    unoRuleCardsDesc: "Uno Maroc se joue avec 108 cartes authentiques aux 4 enseignes marocaines traditionnelles : Copas (الكواص), Oros (الذهب), Bastos (الزرواطة), Espadas (السيوف). Chaque enseigne comprend les chiffres 0 à 9, ainsi que les cartes d'action spéciales : Sota (الشيخ 10 / ⊘ Passe), Caballo (العود 11 / ⇄ Sens), Rey (الملك 12 / +2), plus 8 Jokers universels (4 Jokers Changement de couleur ★ et 4 Jokers Super +4).",
+    unoRulePlay: "2. Comment jouer à ton tour ?",
+    unoRulePlayDesc: "À chaque tour, tu dois poser une carte qui correspond à la carte visible sur le tas central : soit par la <b>même enseigne/couleur</b>, soit par le <b>même numéro</b>, soit un <b>Joker</b>.<br>Si tu ne possèdes aucune carte jouable, clique sur le paquet pour <b>piocher une carte</b>. Si elle est jouable, tu peux la poser immédiatement, sinon clique sur <b>Passer</b>.",
+    unoRuleSpecial: "3. Les cartes d'action spéciales marocaines",
+    unoRuleSpecialDesc: "• <b>Sota / 10 (⊘ PASSE)</b> : Le joueur suivant saute son tour.<br>• <b>Caballo / 11 (⇄ SENS)</b> : Inverse immédiatement le sens de la rotation du jeu.<br>• <b>Rey / 12 (+2 CARTES)</b> : Le joueur suivant pioche 2 cartes et perd son tour.<br>• <b>Joker ★ (Wild)</b> : Jouable à tout moment, permet de choisir la prochaine couleur du jeu.<br>• <b>Joker +4 (Super Wild)</b> : Permet de choisir la couleur ET force le joueur suivant à piocher 4 cartes et passer son tour !",
+    unoRuleUno: "4. La règle d'or : Annoncer 'UNO !'",
+    unoRuleUnoDesc: "Dès qu'il ne te reste plus qu'<b>une seule carte en main</b>, tu dois impérativement cliquer sur le bouton <b>UNO !</b> avant de poser ton avant-dernière carte.<br>⚠️ <b>Pénalité</b> : Si tu oublies de crier UNO avant de jouer, tu reçois automatiquement <b>+2 cartes de pénalité</b> dans ta main !",
+    unoRuleScoring: "5. Fin de manche et Objectif 500 points",
+    unoRuleScoringDesc: "Le premier joueur à se débarrasser de toutes ses cartes remporte la manche. Il empoche tous les points des cartes restant dans les mains des adversaires (Chiffres = valeur faciale, Sota/Caballo/Rey = 20 pts, Jokers = 50 pts). Le premier à atteindre <b>500 points</b> remporte la partie complète !",
+    showcaseUno0: "0 Oros",
+    showcaseUno7: "7 Copas",
+    showcaseUnoSota: "10 Sota ⊘",
+    showcaseUnoCaballo: "11 Caballo ⇄",
+    showcaseUnoRey: "12 Rey +2",
+    showcaseUnoWild: "Joker ★",
+    showcaseUnoD4: "Joker +4"
   },
   ar: {
     title: "الروندا",
@@ -1714,7 +1791,7 @@ const I18N = {
     deck: "البيضة",
     cardsWon: "كوارط",
     announce: "علّي صوتك !",
-    rulesTitle: "قواعد الروندا وطريقة اللعب",
+    rulesTitle: "قواعد اللعبة وطريقة اللعب",
     tabRonda: "روندا المغربية",
     tabUno: "أونو مغربي",
     unoPass: "دوز",
@@ -1758,7 +1835,24 @@ const I18N = {
     ruleBonuses: "4. بونيس الطابلة : البونت والميسا",
     ruleBonusesDesc: "• <b>بونت (+1 نقطة)</b> : إلا كلتي الكارطة اللي يالاه حطها الخصم دابا نيت فالراس.<br>• <b>ميسا (+1 نقطة)</b> : إلا كلتي ومسحتي الطابلة كاملة ومابقات حتى ورقة (طابلة قرعة).",
     ruleScoring: "5. حساب الكوارط فالشوط (الراماسة)",
-    ruleScoringDesc: "فاش كايساليو الكوارط، اللي دار آخر ماكلة كايدي كاع اللي شاط فوق الطابلة (الراماسة). كل لعاب كايحسب كوارطو : كل ورقة فوق 20 كاتعطيك نقطة (مثلا 24 ورقة = 4 دالنقط). أول واحد يوصل لنقط الربحة (21 أو 41) كايربح الطرح !"
+    ruleScoringDesc: "فاش كايساليو الكوارط، اللي دار آخر ماكلة كايدي كاع اللي شاط فوق الطابلة (الراماسة). كل لعاب كايحسب كوارطو : كل ورقة فوق 20 كاتعطيك نقطة (مثلا 24 ورقة = 4 دالنقط). أول واحد يوصل لنقط الربحة (21 أو 41) كايربح الطرح !",
+    unoRuleCards: "1. لعبة الكارطة الصغيرة (Uno Maroc) بـ 108 ورقة",
+    unoRuleCardsDesc: "أونو المغربي كايتلعب بـ 108 دالكوارط فالأنواع المغربية المعروفة : الكواص (Copas)، الذهب (Oros)، الزرواطة (Bastos)، والسيوف (Espadas). كل نوع فيه النماري من 0 حتى لـ 9، مع كوارط الأكشن : الشيخ 10 (دوز ⊘)، العود 11 (بدل الدورة ⇄)، الملك 12 (+2)، و 8 دالجوادر (4 جوكير تبديل اللون ★ و 4 جوكير +4).",
+    unoRulePlay: "2. كيفاش كاتلعب فنوبتك ؟",
+    unoRulePlayDesc: "فنوبتك، خاصك تحط كارطة كاتوافق الكارطة اللي محطوطة فوق الطابلة : إما <b>نفس اللون / النوع</b>، ولا <b>نفس النمرة</b>، ولا تلعب <b>جوكير</b>.<br>إلا ماعندك حتى كارطة صالحة، كليكي على البيضة باش <b>تتيري كارطة</b>. إلا كانت كتلعب لوحها، وإلا ماكاتلعبش كليكي على <b>دوز</b>.",
+    unoRuleSpecial: "3. كوارط الأكشن المغربية العجيبة",
+    unoRuleSpecialDesc: "• <b>الشيخ 10 (⊘ دوز)</b> : كاينقز الخصم اللي تابعك ومايلعبش فهاد التور.<br>• <b>العود 11 (⇄ بدل الدورة)</b> : كايقلب دورة اللعب فالبلاصة.<br>• <b>الملك 12 (+2 كوارط)</b> : الخصم كاياكل 2 دالكوارط وكايدوز تورو.<br>• <b>جوكير ★ (Wild)</b> : كايتلعب فوق أي ورقة وكاتعزل بيه اللون اللي بغيتي.<br>• <b>جوكير +4 (Super Wild)</b> : كاتعزل اللون وكاتوكل الخصم 4 دالكوارط عقوبة وكايدوز تورو !",
+    unoRuleUno: "4. القاعدة الذهبية : إعلان 'أونو !' (UNO)",
+    unoRuleUnoDesc: "فاش كاتبقى عندك <b>كارطة وحدة فاليد</b>، ضروري ومؤكد تكليكي على بوطونة <b>UNO !</b> قبل ما تلوح الكارطة قبل الـلخرة.<br>⚠️ <b>عقوبة</b> : إلا نسيتي ما علنتيش أونو، كاتنزل عليك <b>+2 كارطات عقوبة</b> فالبلاصة !",
+    unoRuleScoring: "5. حساب النقط والربحة بـ 500 نقطة",
+    unoRuleScoringDesc: "أول واحد كايخوي يدو من الكوارط كايربح الشوط ويدّي النقط ديال كاع الكوارط اللي شاطو عند الخصوم (النماري = قيمتهم، الشيخ والعود والملك = 20 نقطة، الجوادر = 50 نقطة). أول لعاب يوصل لـ <b>500 نقطة</b> كايدي الطرح كامل 🏆 !",
+    showcaseUno0: "0 الذهب",
+    showcaseUno7: "7 الكواص",
+    showcaseUnoSota: "10 الشيخ ⊘",
+    showcaseUnoCaballo: "11 العود ⇄",
+    showcaseUnoRey: "12 الملك +2",
+    showcaseUnoWild: "جوكير ★",
+    showcaseUnoD4: "جوكير +4"
   }
 };
 
@@ -1876,7 +1970,13 @@ function applyLanguage(lang) {
     bount: (lang === 'ar') ? "2. البونت" : "2. Bount",
     missa: (lang === 'ar') ? "3. الميسا" : "3. Missa",
     ronda: (lang === 'ar') ? "4. الروندا" : "4. Ronda",
-    tringa: (lang === 'ar') ? "5. الترينڭا" : "5. Tringa"
+    tringa: (lang === 'ar') ? "5. الترينڭا" : "5. Tringa",
+    'uno-match': (lang === 'ar') ? "1. اللون ولا النمرة" : "1. Couleur ou Numéro",
+    'uno-sota': (lang === 'ar') ? "2. الشيخ ⊘" : "2. Sota ⊘",
+    'uno-caballo': (lang === 'ar') ? "3. العود ⇄" : "3. Caballo ⇄",
+    'uno-rey': (lang === 'ar') ? "4. الملك +2" : "4. Rey +2",
+    'uno-wild': (lang === 'ar') ? "5. جوكير +4" : "5. Joker +4",
+    'uno-shout': (lang === 'ar') ? "6. إعلان أونو !" : "6. Bouton UNO !"
   };
   Object.keys(trialStepLabels).forEach(k => {
     const b = $('trial-step-' + k);
@@ -2692,8 +2792,340 @@ const TRIAL_SCENARIOS = {
         }
       };
     }
+  },
+  'uno-match': {
+    game: 'uno',
+    title: { fr: "Même couleur ou même numéro", ar: "نفس اللون ولا نفس النمرة" },
+    desc: {
+      fr: "Sur la table se trouve un <b>7 de Copas (الكواص)</b>.<br>Tu peux jouer une carte de <b>même couleur</b> (ex: 3 de Copas) ou de <b>même numéro</b> (ex: 7 d'Oros). Le 3 de Bastos est invalide.<br>👉 <b>Clique sur une carte valide pour la poser :</b>",
+      ar: "فوق الطابلة كاين <b>7 دالكواص (Copas)</b>.<br>تقدر تلعب كارطة من <b>نفس اللون</b> (بحال 3 دالكواص) ولا من <b>نفس النمرة</b> (بحال 7 دالذهب). الـ 3 دالزرواطة ماتلعبش.<br>👉 <b>كليكي على كارطة صالحة باش تلعبها :</b>"
+    },
+    table: [{ unoId: 13, suit: 'copas', value: '7' }],
+    hand: [
+      { unoId: 38, suit: 'oros', value: '7', correct: true },
+      { unoId: 5, suit: 'copas', value: '3', correct: true },
+      { unoId: 55, suit: 'bastos', value: '3', correct: false }
+    ],
+    action: (c) => {
+      if (c.correct) {
+        return {
+          success: true,
+          sfx: 'slap',
+          msg: {
+            fr: "🎉 Bravo ! Carte posée avec succès (" + (c.value === '7' ? "même numéro 7" : "même couleur Copas") + ") !",
+            ar: "🎉 تبارك الله عليك ! حطيتي الكارطة مزيان (" + (c.value === '7' ? "نفس النمرة 7" : "نفس اللون الكواص") + ") !"
+          }
+        };
+      }
+      return {
+        success: false,
+        shake: true,
+        sfx: 'block',
+        msg: {
+          fr: "❌ Carte non valide ! Le 3 de Bastos n'a ni la même couleur ni le même numéro que le 7 de Copas.",
+          ar: "❌ كارطة ماصالحاش ! 3 دالزرواطة ماعندها نفس اللون ولا نفس النمرة مع 7 دالكواص."
+        }
+      };
+    }
+  },
+  'uno-sota': {
+    game: 'uno',
+    title: { fr: "Sota 10 (Passe son tour ⊘)", ar: "الشيخ 10 (داز تورو ⊘)" },
+    desc: {
+      fr: "La Sota (10) fait <b>passer le tour</b> du joueur suivant !<br>Sur la table se trouve un <b>5 de Bastos (الزرواطة)</b>.<br>👉 <b>Joue ta Sota de Bastos pour bloquer l'adversaire :</b>",
+      ar: "الشيخ (10) كايخلي الخصم <b>يدوز تورو بلا ما يلعب</b> !<br>فوق الطابلة كاين <b>5 دالزرواطة (Bastos)</b>.<br>👉 <b>العب الشيخ دالزرواطة ديالك باش تبلوكي الخصم :</b>"
+    },
+    table: [{ unoId: 57, suit: 'bastos', value: '5' }],
+    hand: [
+      { unoId: 69, suit: 'bastos', value: 'S', correct: true },
+      { unoId: 13, suit: 'copas', value: '7', correct: false }
+    ],
+    action: (c) => {
+      if (c.correct) {
+        return {
+          success: true,
+          sfx: 'block',
+          voice: 'skip',
+          msg: {
+            fr: "🚫 SOTA ! ⊘ L'adversaire passe son tour ! C'est encore à toi de jouer.",
+            ar: "🚫 الشيخ ! ⊘ الخصم داز تورو وبقا كايتفرج ! نوبتك تعاود تلعب."
+          }
+        };
+      }
+      return {
+        success: false,
+        shake: true,
+        sfx: 'block',
+        msg: {
+          fr: "❌ Joue la Sota de Bastos pour bloquer le joueur !",
+          ar: "❌ العب الشيخ دالزرواطة باش تبلوكي الخصم !"
+        }
+      };
+    }
+  },
+  'uno-caballo': {
+    game: 'uno',
+    title: { fr: "Caballo 11 (Changement de sens ⇄)", ar: "العود 11 (بدل الدورة ⇄)" },
+    desc: {
+      fr: "Le Caballo (11) <b>inverse le sens du jeu</b> immédiatement !<br>Sur la table se trouve un <b>Caballo d'Espadas (السيوف)</b>.<br>👉 <b>Pose ton Caballo d'Oros pour inverser la rotation :</b>",
+      ar: "العود (11) <b>كايقلب الدورة داللعب</b> فالبلاصة !<br>فوق الطابلة كاين <b>العود دالسيوف (Espadas)</b>.<br>👉 <b>حط العود دالذهب ديالك باش تقلب الدورة :</b>"
+    },
+    table: [{ unoId: 96, suit: 'espadas', value: 'R' }],
+    hand: [
+      { unoId: 46, suit: 'oros', value: 'R', correct: true },
+      { unoId: 5, suit: 'copas', value: '3', correct: false }
+    ],
+    action: (c) => {
+      if (c.correct) {
+        return {
+          success: true,
+          sfx: 'swoosh',
+          voice: 'reverse',
+          msg: {
+            fr: "⇄ CABALLO ! Changement de sens de rotation validé !",
+            ar: "⇄ العود ! تبدلات الدورة داللعب فالبلاصة !"
+          }
+        };
+      }
+      return {
+        success: false,
+        shake: true,
+        sfx: 'block',
+        msg: {
+          fr: "❌ Joue le Caballo d'Oros pour changer de sens !",
+          ar: "❌ حط العود دالذهب باش تبدل الدورة !"
+        }
+      };
+    }
+  },
+  'uno-rey': {
+    game: 'uno',
+    title: { fr: "Rey 12 (+2 cartes)", ar: "الملك 12 (+2 كوارط)" },
+    desc: {
+      fr: "Le Rey (12) inflige <b>+2 cartes de pénalité</b> au joueur suivant et lui fait passer son tour !<br>Sur la table : <b>2 de Copas (الكواص)</b>.<br>👉 <b>Joue ton Rey de Copas :</b>",
+      ar: "الملك (12) كايوكل الخصم <b>+2 دالكوارط عقوبة</b> ويدوز تورو !<br>فوق الطابلة : <b>2 دالكواص (Copas)</b>.<br>👉 <b>العب الملك دالكواص ديالك :</b>"
+    },
+    table: [{ unoId: 3, suit: 'copas', value: '2' }],
+    hand: [
+      { unoId: 23, suit: 'copas', value: 'D2', correct: true },
+      { unoId: 55, suit: 'bastos', value: '3', correct: false }
+    ],
+    action: (c) => {
+      if (c.correct) {
+        return {
+          success: true,
+          sfx: 'slap',
+          voice: 'draw2',
+          msg: {
+            fr: "👑 REY +2 ! L'adversaire pioche 2 cartes et saute son tour !",
+            ar: "👑 الملك +2 ! الخصم تيرى 2 دالكوارط وداز تورو !"
+          }
+        };
+      }
+      return {
+        success: false,
+        shake: true,
+        sfx: 'block',
+        msg: {
+          fr: "❌ Joue le Rey de Copas !",
+          ar: "❌ العب الملك دالكواص !"
+        }
+      };
+    }
+  },
+  'uno-wild': {
+    game: 'uno',
+    title: { fr: "Joker +4 (Super Wild)", ar: "جوكير +4 (Super Wild)" },
+    desc: {
+      fr: "Le Joker +4 est la carte la plus puissante : elle permet de <b>choisir la couleur</b> et force l'adversaire à <b>piocher 4 cartes</b> !<br>Sur la table : <b>6 d'Oros (الذهب)</b>.<br>👉 <b>Joue ton Joker +4 :</b>",
+      ar: "جوكير +4 هو أجهد ورقة : كاتعزل بيه <b>اللون اللي بغيتي</b> وكاتوكل الخصم <b>4 دالكوارط</b> !<br>فوق الطابلة : <b>6 دالذهب (Oros)</b>.<br>👉 <b>العب جوكير +4 ديالك :</b>"
+    },
+    table: [{ unoId: 36, suit: 'oros', value: '6' }],
+    hand: [
+      { unoId: 101, suit: 'wild', value: 'D4', correct: true },
+      { unoId: 80, suit: 'espadas', value: '3', correct: false }
+    ],
+    action: (c) => {
+      if (c.correct) {
+        return {
+          success: true,
+          sfx: 'chime',
+          voice: 'draw4',
+          msg: {
+            fr: "🔥 JOKER +4 ! L'adversaire encaisse 4 cartes et tu choisis la nouvelle couleur !",
+            ar: "🔥 جوكير +4 مسموم ! الخصم كلى 4 دالكوارط وعزلتي اللون اللي بغيتي !"
+          }
+        };
+      }
+      return {
+        success: false,
+        shake: true,
+        sfx: 'block',
+        msg: {
+          fr: "❌ Joue le Joker +4 !",
+          ar: "❌ العب جوكير +4 !"
+        }
+      };
+    }
+  },
+  'uno-shout': {
+    game: 'uno',
+    title: { fr: "Bouton UNO ! (Annonce)", ar: "إعلان أونو ! (UNO)" },
+    desc: {
+      fr: "Il ne te reste que 2 cartes ! <b>Active le bouton UNO !</b> avant de poser ton avant-dernière carte.<br>Sur la table : <b>7 d'Oros (الذهب)</b>.<br>👉 <b>Clique sur le bouton 'UNO !' ci-dessous puis pose ton 7 de Copas :</b>",
+      ar: "باقين عندك غير 2 كوارط ! <b>شعّل بوطونة UNO !</b> قبل ما تحط الكارطة قبل الـلخرة.<br>فوق الطابلة : <b>7 دالذهب (Oros)</b>.<br>👉 <b>كليكي على بوطونة 'UNO !' لتحت ومن بعد حط 7 دالكواص ديالك :</b>"
+    },
+    table: [{ unoId: 38, suit: 'oros', value: '7' }],
+    hand: [
+      { unoId: 13, suit: 'copas', value: '7', correct: true },
+      { unoId: 5, suit: 'copas', value: '3', correct: false }
+    ],
+    needUnoBtn: true,
+    action: (c, unoActive) => {
+      if (c.correct) {
+        if (!unoActive) {
+          return {
+            success: false,
+            shake: true,
+            sfx: 'block',
+            voice: 'uno_missed',
+            msg: {
+              fr: "⚠️ Tu as oublié d'annoncer UNO ! Pénalité de +2 cartes ! Clique sur le bouton UNO ! d'abord.",
+              ar: "⚠️ نسيتي ما علنتيش أونو ! نزلات عليك +2 كوارط عقوبة ! كليكي على بوطونة UNO ! هي اللولة."
+            }
+          };
+        }
+        return {
+          success: true,
+          sfx: 'alert',
+          voice: 'uno',
+          msg: {
+            fr: "🎉 أونو ! Annonce parfaite ! Il ne te reste plus qu'une seule carte pour la victoire !",
+            ar: "🎉 أونووو ! علنتي فالبلاصة ! بقات ليك غير كارطة وحدة وتربح الطرح !"
+          }
+        };
+      }
+      return {
+        success: false,
+        shake: true,
+        sfx: 'block',
+        msg: {
+          fr: "❌ Joue ton 7 de Copas après avoir cliqué sur UNO !",
+          ar: "❌ العب 7 دالكواص بعدما تشعّل UNO !"
+        }
+      };
+    }
   }
 };
+
+function makeUnoCardEl(id) {
+  const SUIT = { R: "copas", Y: "oros", G: "bastos", B: "espadas" };
+  const SUIT_OFFSET = { copas: 0, oros: 10, bastos: 20, espadas: 30 };
+  const FACE = {
+    S: { n: "10", nm: "SOTA", arNm: "الشيخ", bd: "⊘ PASSE", arBd: "⊘ دوز", cls: "sota" },
+    R: { n: "11", nm: "CABALLO", arNm: "العود", bd: "⇄ SENS", arBd: "⇄ بدل", cls: "caballo" },
+    D2: { n: "12", nm: "REY", arNm: "الملك", bd: "+2", arBd: "+2", cls: "rey" }
+  };
+  const c = Uno.CARDS[id];
+  const e = document.createElement("div");
+  e.className = "card";
+  e.setAttribute("data-id", id);
+
+  const img = document.createElement("img");
+  if (c.color === "W") {
+    img.src = c.value === "D4" ? "cards/wild_d4.png" : "cards/wild.png";
+  } else {
+    const s = SUIT[c.color];
+    if (c.value === "0") img.src = `cards/${s}_0.png`;
+    else if (c.value >= "1" && c.value <= "7") img.src = `cards/${SUIT_OFFSET[s] + (+c.value - 1)}.png`;
+    else if (c.value === "8") img.src = `cards/${s}_8.png`;
+    else if (c.value === "9") img.src = `cards/${s}_9.png`;
+    else if (c.value === "S") img.src = `cards/${SUIT_OFFSET[s] + 7}.png`;
+    else if (c.value === "R") img.src = `cards/${SUIT_OFFSET[s] + 8}.png`;
+    else if (c.value === "D2") img.src = `cards/${SUIT_OFFSET[s] + 9}.png`;
+    else img.src = "cards/back.png";
+  }
+  img.style.width = "100%";
+  img.style.height = "100%";
+  img.style.borderRadius = "8px";
+  e.appendChild(img);
+
+  if (c.color === "W") {
+    const badge = document.createElement("span");
+    badge.className = "uno-badge " + (c.value === "D4" ? "d4" : "wild");
+    badge.textContent = c.value === "D4" ? "+4" : "★";
+    e.appendChild(badge);
+  } else if (FACE[c.value]) {
+    const f = FACE[c.value];
+    const badge = document.createElement("span");
+    badge.className = "uno-badge " + f.cls;
+    badge.textContent = currentLang === 'ar' ? f.arBd : f.bd;
+    e.appendChild(badge);
+  }
+  return e;
+}
+
+let trialUnoBtnActive = false;
+let currentRulesGame = 'ronda';
+let currentRulesTab = 'txt';
+
+function selectRulesGame(game) {
+  currentRulesGame = game;
+  if (game === 'uno') {
+    $("modal-tab-uno").classList.add("active");
+    $("modal-tab-ronda").classList.remove("active");
+    $("trial-steps-uno").style.display = "flex";
+    $("trial-steps-ronda").style.display = "none";
+    if (currentRulesTab === 'txt') {
+      $("panel-rules-txt-uno").style.display = "flex";
+      $("panel-rules-txt-ronda").style.display = "none";
+      $("panel-rules-trial").style.display = "none";
+    } else {
+      $("panel-rules-txt-uno").style.display = "none";
+      $("panel-rules-txt-ronda").style.display = "none";
+      $("panel-rules-trial").style.display = "flex";
+      loadTrialScenario('uno-match');
+    }
+  } else {
+    $("modal-tab-ronda").classList.add("active");
+    $("modal-tab-uno").classList.remove("active");
+    $("trial-steps-ronda").style.display = "flex";
+    $("trial-steps-uno").style.display = "none";
+    if (currentRulesTab === 'txt') {
+      $("panel-rules-txt-ronda").style.display = "flex";
+      $("panel-rules-txt-uno").style.display = "none";
+      $("panel-rules-trial").style.display = "none";
+    } else {
+      $("panel-rules-txt-ronda").style.display = "none";
+      $("panel-rules-txt-uno").style.display = "none";
+      $("panel-rules-trial").style.display = "flex";
+      loadTrialScenario('suite');
+    }
+  }
+}
+
+function selectRulesTab(tab) {
+  currentRulesTab = tab;
+  if (tab === 'txt') {
+    $("tab-rules-txt").classList.add("active");
+    $("tab-rules-trial").classList.remove("active");
+    $("panel-rules-trial").style.display = "none";
+    if (currentRulesGame === 'uno') {
+      $("panel-rules-txt-uno").style.display = "flex";
+      $("panel-rules-txt-ronda").style.display = "none";
+    } else {
+      $("panel-rules-txt-ronda").style.display = "flex";
+      $("panel-rules-txt-uno").style.display = "none";
+    }
+  } else {
+    $("tab-rules-trial").classList.add("active");
+    $("tab-rules-txt").classList.remove("active");
+    $("panel-rules-txt-ronda").style.display = "none";
+    $("panel-rules-txt-uno").style.display = "none";
+    $("panel-rules-trial").style.display = "flex";
+    loadTrialScenario(currentRulesGame === 'uno' ? 'uno-match' : 'suite');
+  }
+}
 
 function loadTrialScenario(key) {
   trialCurrentScenario = key;
@@ -2701,7 +3133,8 @@ function loadTrialScenario(key) {
   if (!sc) return;
 
   // Highlight active trial button
-  ['suite', 'bount', 'missa', 'ronda', 'tringa'].forEach(k => {
+  const allKeys = ['suite', 'bount', 'missa', 'ronda', 'tringa', 'uno-match', 'uno-sota', 'uno-caballo', 'uno-rey', 'uno-wild', 'uno-shout'];
+  allKeys.forEach(k => {
     const btn = $('trial-step-' + k);
     if (btn) {
       if (k === key) {
@@ -2721,53 +3154,96 @@ function loadTrialScenario(key) {
   $("trial-instructions").innerHTML = sc.desc[currentLang] || sc.desc.fr;
   $("trial-feedback").textContent = "";
 
-  // Render Table
   const tRow = $("trial-table-row");
-  tRow.innerHTML = "";
-  sc.table.forEach(c => {
-    const el = makeCardEl(c.id, c.lastPlayed ? "last-played" : "");
-    if (c.lastPlayed) {
-      const tag = document.createElement("div");
-      tag.className = "last-tag";
-      tag.textContent = currentLang === 'ar' ? "الأخيرة" : "Dernière";
-      el.appendChild(tag);
-    }
-    tRow.appendChild(el);
-  });
-
-  // Render Hand
   const hRow = $("trial-hand-row");
+  tRow.innerHTML = "";
   hRow.innerHTML = "";
-  sc.hand.forEach(c => {
-    const el = makeCardEl(c.id, "mine");
-    el.onclick = () => {
-      const res = sc.action(c);
-      $("trial-feedback").innerHTML = res.msg[currentLang] || res.msg.fr;
-      if (res.success) {
-        if (res.bount) {
-          RondaSound.say('bount');
-          showEventBanner("BOUNT ! +1");
-        } else if (res.missa) {
-          RondaSound.say('missa');
-          showEventBanner("MISSA ! +1");
-        } else if (res.combo) {
-          RondaSound.say(res.combo);
-          showEventBanner(res.combo === 'tringa' ? "TRINGA ! +5" : "RONDA ! +1");
-        } else {
-          RondaSound.playSFX('capture');
-        }
 
-        if (res.cap) {
-          const targets = document.querySelectorAll("#trial-table-row .card");
-          targets.forEach(t => {
-            const cid = parseInt(t.dataset.cardId);
-            if (res.cap.includes(cid)) t.classList.add("capturing");
-          });
+  if (sc.game === 'uno') {
+    trialUnoBtnActive = false;
+    sc.table.forEach(c => {
+      const el = makeUnoCardEl(c.unoId);
+      tRow.appendChild(el);
+    });
+
+    sc.hand.forEach(c => {
+      const el = makeUnoCardEl(c.unoId);
+      el.style.cursor = 'pointer';
+      el.onclick = () => {
+        const res = sc.action(c, trialUnoBtnActive);
+        $("trial-feedback").innerHTML = res.msg[currentLang] || res.msg.fr;
+        if (res.shake) {
+          el.classList.remove('card-shake');
+          void el.offsetWidth;
+          el.classList.add('card-shake');
+          setTimeout(() => el.classList.remove('card-shake'), 450);
         }
+        if (res.sfx) try { RondaSound.playSFX(res.sfx); } catch(e) {}
+        if (res.voice) try { RondaSound.say(res.voice); } catch(e) {}
+      };
+      hRow.appendChild(el);
+    });
+
+    if (sc.needUnoBtn) {
+      $("trial-uno-btn-wrap").style.display = "flex";
+      $("trial-uno-btn").classList.remove("on");
+      $("trial-uno-btn").onclick = () => {
+        trialUnoBtnActive = !trialUnoBtnActive;
+        $("trial-uno-btn").classList.toggle("on", trialUnoBtnActive);
+        if (trialUnoBtnActive) {
+          try {
+            RondaSound.playSFX('alert');
+            setTimeout(() => RondaSound.say('uno'), 100);
+          } catch(e) {}
+        }
+      };
+    } else {
+      $("trial-uno-btn-wrap").style.display = "none";
+    }
+  } else {
+    $("trial-uno-btn-wrap").style.display = "none";
+    sc.table.forEach(c => {
+      const el = makeCardEl(c.id, c.lastPlayed ? "last-played" : "");
+      if (c.lastPlayed) {
+        const tag = document.createElement("div");
+        tag.className = "last-tag";
+        tag.textContent = currentLang === 'ar' ? "الأخيرة" : "Dernière";
+        el.appendChild(tag);
       }
-    };
-    hRow.appendChild(el);
-  });
+      tRow.appendChild(el);
+    });
+
+    sc.hand.forEach(c => {
+      const el = makeCardEl(c.id, "mine");
+      el.onclick = () => {
+        const res = sc.action(c);
+        $("trial-feedback").innerHTML = res.msg[currentLang] || res.msg.fr;
+        if (res.success) {
+          if (res.bount) {
+            RondaSound.say('bount');
+            showEventBanner("BOUNT ! +1");
+          } else if (res.missa) {
+            RondaSound.say('missa');
+            showEventBanner("MISSA ! +1");
+          } else if (res.combo) {
+            RondaSound.say(res.combo);
+            showEventBanner(res.combo === 'tringa' ? "TRINGA ! +5" : "RONDA ! +1");
+          } else {
+            RondaSound.playSFX('capture');
+          }
+
+          if (res.cap) {
+            const targets = document.querySelectorAll("#trial-table-row .card");
+            targets.forEach(t => {
+              const cid = parseInt(t.dataset.cardId);
+              if (res.cap.includes(cid)) t.classList.add("capturing");
+            });
+          }
+        }
+      };
+      hRow.appendChild(el);
+    });
+  }
 }
 
 /* =====================================================================
@@ -3501,7 +3977,7 @@ document.addEventListener("DOMContentLoaded", () => {
       $("uno-view").style.display = "";
       $("tab-btn-ronda").classList.remove("active");
       $("tab-btn-uno").classList.add("active");
-      $("btn-rules").style.display = "none";
+      $("btn-rules").style.display = "";
       $("btn-settings").style.display = "none";
       $("btn-stats").style.display = "none";
       try { history.replaceState(null, '', '#uno'); } catch(e) {}
@@ -3552,30 +4028,31 @@ document.addEventListener("DOMContentLoaded", () => {
   // Rules Modal
   $("btn-rules").onclick = () => {
     $("modal-rules").style.display = "flex";
-    loadTrialScenario('suite');
+    const curTab = ($("uno-view").style.display !== "none") ? "uno" : "ronda";
+    selectRulesGame(curTab);
   };
   $("btn-close-rules").onclick = () => $("modal-rules").style.display = "none";
 
-  $("tab-rules-txt").onclick = () => {
-    $("tab-rules-txt").classList.add("active");
-    $("tab-rules-trial").classList.remove("active");
-    $("panel-rules-txt").style.display = "flex";
-    $("panel-rules-trial").style.display = "none";
-  };
+  $("modal-tab-ronda").onclick = () => selectRulesGame('ronda');
+  $("modal-tab-uno").onclick = () => selectRulesGame('uno');
 
-  $("tab-rules-trial").onclick = () => {
-    $("tab-rules-trial").classList.add("active");
-    $("tab-rules-txt").classList.remove("active");
-    $("panel-rules-txt").style.display = "none";
-    $("panel-rules-trial").style.display = "flex";
-    loadTrialScenario(trialCurrentScenario);
-  };
+  $("tab-rules-txt").onclick = () => selectRulesTab('txt');
+  $("tab-rules-trial").onclick = () => selectRulesTab('trial');
 
+  // Ronda Trial steps
   $("trial-step-suite").onclick = () => loadTrialScenario('suite');
   $("trial-step-bount").onclick = () => loadTrialScenario('bount');
   $("trial-step-missa").onclick = () => loadTrialScenario('missa');
   $("trial-step-ronda").onclick = () => loadTrialScenario('ronda');
   $("trial-step-tringa").onclick = () => loadTrialScenario('tringa');
+
+  // Uno Trial steps
+  $("trial-step-uno-match").onclick = () => loadTrialScenario('uno-match');
+  $("trial-step-uno-sota").onclick = () => loadTrialScenario('uno-sota');
+  $("trial-step-uno-caballo").onclick = () => loadTrialScenario('uno-caballo');
+  $("trial-step-uno-rey").onclick = () => loadTrialScenario('uno-rey');
+  $("trial-step-uno-wild").onclick = () => loadTrialScenario('uno-wild');
+  $("trial-step-uno-shout").onclick = () => loadTrialScenario('uno-shout');
 
   // Settings Modal
   $("btn-settings").onclick = () => {
