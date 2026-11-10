@@ -94,12 +94,12 @@
       lose: 'L\'adversaire a gagné la partie.'
     },
     darija: {
-      ronda: 'روندا !',
-      tringa: 'ترينڭا !',
-      missa: 'ميسا !',
-      bount: 'بونت !',
-      win: 'مبروك ! ربحتي الماتش !',
-      lose: 'خسرتي هاد المرة !'
+      ronda: ['روندا !', 'روندا حية !', 'عندي روندا ناضية !'],
+      tringa: ['ترينڭا !', 'ترينڭا مسمومة ! خمسة دالنقط !', 'تلاتة دقة وحدة ! ترينڭا !'],
+      missa: ['ميسا قرعة !', 'ميسا ! مسحت الطابلة !', 'الطابلة نقية ! ميسا !'],
+      bount: ['بونت فالراس !', 'بونت ! رديتها ليك تما !', 'بونت فالوجه !'],
+      win: ['مبروك عليك ! ربحتي الطرح يا الحريف !', 'طيرتي ليه الماتش، معلم ديال الروندا نيت !'],
+      lose: ['الخصم دا الطرح، عاود طرح أخور وعوضها !', 'معليش، الطرح الجاي ديالك ان شاء الله !']
     }
   };
 
@@ -238,11 +238,14 @@
   function fallbackSpeech(key, lang) {
     try {
       if (root.speechSynthesis) {
-        const text = (phrases[lang] && phrases[lang][key]) || (phrases.fr && phrases.fr[key]);
-        if (text) {
-          const u = new SpeechSynthesisUtterance(text);
+        let phrase = (phrases[lang] && phrases[lang][key]) || (phrases.fr && phrases.fr[key]);
+        if (Array.isArray(phrase)) {
+          phrase = phrase[Math.floor(Math.random() * phrase.length)];
+        }
+        if (phrase) {
+          const u = new SpeechSynthesisUtterance(phrase);
           u.lang = lang === 'darija' ? 'ar-MA' : 'fr-FR';
-          u.rate = 1.1;
+          u.rate = 1.05;
           u.volume = Math.max(0, Math.min(1, volume));
           root.speechSynthesis.speak(u);
         }

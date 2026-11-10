@@ -18,8 +18,8 @@
   const SUITS = ['copas', 'oros', 'bastos', 'espadas'];
   const RANKS = [1, 2, 3, 4, 5, 6, 7, 10, 11, 12];          // ordre des suites : 7 -> 10 (sota)
   const NAMES = { 10: 'Sota', 11: 'Caballo', 12: 'Rey' };
-  const AR_SUITS = { copas: 'كواص', oros: 'دينار', bastos: 'زرواطة', espadas: 'سياف' };
-  const AR_NAMES = { 10: 'الشيخ', 11: 'العود', 12: 'الملك' };
+  const AR_SUITS = { copas: 'الكواص', oros: 'الذهب', bastos: 'الزرواطة', espadas: 'السيوف' };
+  const AR_NAMES = { 1: 'الواحد', 2: 'الجوج', 3: 'التلاتة', 4: 'الربعة', 5: 'الخمسة', 6: 'الستة', 7: 'السبعة', 10: 'الشيخ', 11: 'العود', 12: 'الملك' };
 
   const CARDS = [];
   SUITS.forEach((s, si) => RANKS.forEach((r, ri) =>
