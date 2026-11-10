@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -554,7 +554,7 @@ button:disabled {
   </div>
   <div class="header-actions">
     <button class="btn-icon" id="btn-sound" title="Son">🔊</button>
-    <button class="btn-secondary" id="btn-lang">🇲🇦 دارجة</button>
+    <button class="btn-secondary" id="btn-lang">🇫🇷 FR</button>
     <button class="btn-primary" id="nw">Nouvelle</button>
   </div>
 </header>
@@ -660,7 +660,18 @@ const FACE = {
   D2: { n: "12", nm: "REY", arNm: "الملك", bd: "+2", arBd: "+2", cls: "rey" }
 };
 
-let currentLang = 'fr';
+let currentLang = 'ar';
+try {
+  const urlParams = new URLSearchParams(window.location.search);
+  const qLang = urlParams.get('lang');
+  if (qLang === 'ar' || qLang === 'fr') {
+    currentLang = qLang;
+  } else {
+    const savedChoice = localStorage.getItem('ronda_lang_user_choice');
+    if (savedChoice === 'fr' || savedChoice === 'ar') currentLang = savedChoice;
+    else currentLang = 'ar';
+  }
+} catch (e) {}
 let g, busy = false, log = [], gen = 0, unoOn = false, pending = null;
 
 const CADENCE_CONFIG = {
@@ -868,6 +879,7 @@ function say(ev) {
 }
 
 function render(thinkingPlayer = null) {
+  if (!g) return;
   const v = g.view(0);
   $("score-me").textContent = v.scores[0];
   const maxOpp = Math.max(...v.scores.slice(1));
@@ -1127,9 +1139,8 @@ $("btn-sound").onclick = () => {
   $("btn-sound").textContent = soundOn ? "🔊" : "🔇";
 };
 
-// Language toggle
-$("btn-lang").onclick = () => {
-  currentLang = currentLang === 'fr' ? 'ar' : 'fr';
+function applyLang(lang) {
+  currentLang = lang;
   document.documentElement.setAttribute('dir', currentLang === 'ar' ? 'rtl' : 'ltr');
   document.documentElement.setAttribute('lang', currentLang);
   $("btn-lang").textContent = currentLang === 'ar' ? "🇫🇷 FR" : "🇲🇦 دارجة";
@@ -1151,7 +1162,7 @@ $("btn-lang").onclick = () => {
     npOpts[0].text = "1 روبوت (1 ضد 1)";
     npOpts[1].text = "2 روبوتات (3 لعابة)";
     npOpts[2].text = "3 روبوتات (4 لعابة)";
-    try { RondaSound.setVoiceLanguage('ar'); } catch(e) {}
+    try { RondaSound.setVoiceLanguage('darija'); } catch(e) {}
   } else {
     cadOpts[0].text = "⏱️ Cadence Réelle";
     cadOpts[1].text = "☕ Détendue";
@@ -1162,9 +1173,16 @@ $("btn-lang").onclick = () => {
     try { RondaSound.setVoiceLanguage('fr'); } catch(e) {}
   }
   render();
+}
+
+$("btn-lang").onclick = () => {
+  const newLang = currentLang === 'fr' ? 'ar' : 'fr';
+  try { localStorage.setItem('ronda_lang_user_choice', newLang); } catch(e) {}
+  applyLang(newLang);
 };
 
 start();
+applyLang(currentLang);
 </script>
 </body>
 </html>

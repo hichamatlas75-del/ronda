@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1139,7 +1139,7 @@ button, select {
     <!-- Stats -->
     <button class="btn-icon" id="btn-stats" title="Statistiques" aria-label="Statistiques">📊</button>
     <!-- Language toggle -->
-    <button class="btn-secondary" id="btn-lang" title="Changer de langue">🇲🇦 دارجة</button>
+    <button class="btn-secondary" id="btn-lang" title="تبديل اللغة">🇫🇷 Français</button>
     <!-- New Game -->
     <button class="btn-primary" id="btn-new" data-i18n="newGame">Nouvelle</button>
   </div>
@@ -1714,15 +1714,16 @@ const I18N = {
   }
 };
 
-let currentLang = 'fr';
+let currentLang = 'ar';
 try {
   const urlParams = new URLSearchParams(window.location.search);
   const qLang = urlParams.get('lang');
   if (qLang === 'ar' || qLang === 'fr') {
     currentLang = qLang;
   } else {
-    const savedLang = localStorage.getItem('ronda_ui_lang');
-    if (savedLang === 'ar' || savedLang === 'fr') currentLang = savedLang;
+    const userChoice = localStorage.getItem('ronda_lang_user_choice');
+    if (userChoice === 'fr' || userChoice === 'ar') currentLang = userChoice;
+    else currentLang = 'ar';
   }
 } catch (e) {}
 
@@ -1740,6 +1741,11 @@ function applyLanguage(lang) {
   });
 
   $("btn-lang").textContent = (lang === 'fr') ? "🇲🇦 دارجة" : "🇫🇷 Français";
+  try {
+    if (typeof RondaSound !== 'undefined') {
+      RondaSound.setVoiceLanguage(lang === 'fr' ? 'fr' : 'darija');
+    }
+  } catch(e) {}
 
   if (window.UnoGameController && window.UnoGameController.isStarted()) {
     window.UnoGameController.render();
@@ -3259,7 +3265,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Language switcher
   $("btn-lang").onclick = () => {
-    applyLanguage(currentLang === 'fr' ? 'ar' : 'fr');
+    const newLang = currentLang === 'fr' ? 'ar' : 'fr';
+    try { localStorage.setItem('ronda_lang_user_choice', newLang); } catch(e) {}
+    applyLanguage(newLang);
     if ($("modal-rules").style.display === "flex") {
       loadTrialScenario(trialCurrentScenario);
     }
