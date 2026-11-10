@@ -784,9 +784,257 @@ button, select {
   0% { transform: scale(0.8); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
+
+/* App Switcher Tabs */
+.app-tabs-wrap {
+  width: min(98vw, 680px);
+  margin-bottom: 6px;
+}
+
+.app-tabs {
+  display: flex;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.app-tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--fg-dim);
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.app-tab-btn:hover {
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.app-tab-btn.active {
+  background: var(--accent);
+  color: var(--btnfg);
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+/* Uno View Styles */
+#uno-game-container {
+  width: min(98vw, 680px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#uno-scoreboard {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#uno-opps {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.uno-op {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 999px;
+  padding: 5px 12px;
+  text-align: center;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.uno-op.t {
+  border-color: var(--accent);
+  background: rgba(245, 197, 66, 0.18);
+  color: #fff;
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+#uno-felt {
+  background: radial-gradient(ellipse at center, #0e3d40 0%, #061d1f 100%);
+  border: 4px solid #5a3418;
+  border-radius: 20px;
+  box-shadow: 0 0 0 2px var(--accent), inset 0 0 45px rgba(0, 0, 0, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 16px;
+  min-height: calc(var(--card-h) + 32px);
+}
+
+#uno-cur {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 12px var(--accent-glow);
+  padding: 4px;
+}
+
+#uno-status-bar {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 8px 14px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  color: var(--fg-dim);
+}
+
+#uno-hand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  min-height: calc(var(--card-h) + 16px);
+  padding: 8px 4px;
+}
+
+#uno-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+#uno-btn-uno.on {
+  background: #e53935;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(229, 57, 53, 0.85);
+  animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.06); }
+}
+
+.uno-badge {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(16, 44, 88, 0.92);
+  color: #fff;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  padding: 2px 7px;
+  font-size: clamp(8px, 2.2vw, 11px);
+  font-weight: 800;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  pointer-events: none;
+}
+
+.uno-badge.rey, .uno-badge.d4 { background: #c0262d; }
+.uno-badge.sota { background: #102c58; }
+.uno-badge.caballo { background: #1f7a3a; }
+.uno-badge.wild { background: #b98a00; }
+
+#uno-cp {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+#uno-cp button {
+  height: 80px;
+  width: 90px;
+  border-radius: 14px;
+  background: #fff;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  gap: 4px;
+  cursor: pointer;
+}
+
+#uno-cp button:hover {
+  border-color: var(--accent);
+  transform: scale(1.05);
+}
+
+#uno-cp svg {
+  height: 44px;
+  width: 44px;
+}
+
+#uno-cp span {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #222;
+}
+
 </style>
 </head>
 <body>
+
+<!-- SVG Suit Symbols for Uno & Badges -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="oros" viewBox="0 0 40 40">
+    <circle cx="20" cy="20" r="18" fill="#f2b705" stroke="#7a4d00" stroke-width="2"/>
+    <circle cx="20" cy="20" r="12.5" fill="none" stroke="#7a4d00" stroke-width="1.6"/>
+    <circle cx="20" cy="20" r="6" fill="#d98e00" stroke="#7a4d00" stroke-width="1.6"/>
+    <g fill="#7a4d00"><circle cx="20" cy="4.5" r="1.4"/><circle cx="20" cy="35.5" r="1.4"/><circle cx="4.5" cy="20" r="1.4"/><circle cx="35.5" cy="20" r="1.4"/></g>
+  </symbol>
+  <symbol id="copas" viewBox="0 0 40 40">
+    <path d="M7 5h26c0 11-5 17-13 17S7 16 7 5z" fill="#d6303a" stroke="#5c0d11" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M17.5 22h5v9h-5z" fill="#d6303a" stroke="#5c0d11" stroke-width="2"/>
+    <path d="M9 36c0-3 5-5 11-5s11 2 11 5z" fill="#d6303a" stroke="#5c0d11" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M11 9h18" stroke="#fbd0d3" stroke-width="1.8"/>
+  </symbol>
+  <symbol id="bastos" viewBox="0 0 40 40">
+    <g transform="rotate(35 20 20)">
+      <rect x="15.5" y="2" width="9" height="36" rx="4.5" fill="#35a04e" stroke="#0f4a1f" stroke-width="2"/>
+      <circle cx="20" cy="11" r="2.8" fill="#0f4a1f"/><circle cx="20" cy="27" r="2.8" fill="#0f4a1f"/>
+      <path d="M15.5 19l-6-3M24.5 21l6 3" stroke="#0f4a1f" stroke-width="2.4" stroke-linecap="round"/>
+    </g>
+  </symbol>
+  <symbol id="espadas" viewBox="0 0 40 40">
+    <path d="M20 1l5 23H15z" fill="#4b86e0" stroke="#10306a" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M20 4v20" stroke="#10306a" stroke-width="1.4"/>
+    <rect x="8" y="24" width="24" height="4" rx="2" fill="#e0b73a" stroke="#10306a" stroke-width="1.8"/>
+    <rect x="17.5" y="28" width="5" height="7" fill="#7a1f2b" stroke="#10306a" stroke-width="1.6"/>
+    <circle cx="20" cy="37" r="2.6" fill="#e0b73a" stroke="#10306a" stroke-width="1.4"/>
+  </symbol>
+</svg>
 
 <!-- Header -->
 <header>
@@ -810,6 +1058,19 @@ button, select {
     <button class="btn-primary" id="btn-new" data-i18n="newGame">Nouvelle</button>
   </div>
 </header>
+
+<!-- App Switcher Tabs -->
+<div class="app-tabs-wrap">
+  <nav class="app-tabs" id="app-tabs">
+    <button class="app-tab-btn active" id="tab-btn-ronda">
+      <span>🎴</span> <span data-i18n="tabRonda">Ronda Maroc</span>
+    </button>
+    <button class="app-tab-btn" id="tab-btn-uno">
+      <span>🃏</span> <span data-i18n="tabUno">Uno Maroc</span>
+    </button>
+  </nav>
+</div>
+
 
 <!-- Audio Settings Popover -->
 <div id="audio-panel">
@@ -835,6 +1096,8 @@ button, select {
   </div>
 </div>
 
+<!-- Ronda Game View -->
+<div id="ronda-view">
 <!-- Main Game Area -->
 <div id="game-container">
 
@@ -924,6 +1187,89 @@ button, select {
     <div id="log-ticker">Prépare-toi pour la donne.</div>
   </div>
 </div>
+</div>
+
+<!-- Uno Maroc Game View -->
+<div id="uno-view" style="display:none;">
+  <div id="uno-game-container">
+    <!-- Uno Scoreboard -->
+    <div id="uno-scoreboard">
+      <div class="score-col">
+        <div><span style="font-weight:700;" data-i18n="you">Toi</span></div>
+        <div class="score-num" id="uno-score-me">0</div>
+      </div>
+      <div class="round-info" style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+        <div style="display:flex; gap:6px;">
+          <select id="uno-np" aria-label="Joueurs">
+            <option value="2">2 Joueurs</option>
+            <option value="3">3 Joueurs</option>
+            <option value="4" selected>4 Joueurs</option>
+          </select>
+          <select id="uno-lv" aria-label="Difficulté">
+            <option value="debutant">Débutant</option>
+            <option value="habitue" selected>Habitué</option>
+            <option value="maitre">Maître</option>
+          </select>
+        </div>
+        <small style="color:var(--fg-dim);"><span data-i18n="round">Manche</span> <b id="uno-round-num">1</b> · <span data-i18n="target">Cible</span> <b>500</b> pts</small>
+      </div>
+      <div class="score-col" style="text-align:right;">
+        <div class="score-num" id="uno-score-leader">0</div>
+        <div><span style="font-weight:700;">Leader</span></div>
+      </div>
+    </div>
+
+    <!-- Opponents Bar -->
+    <div id="uno-opps"></div>
+
+    <!-- Moroccan Felt Table -->
+    <div id="uno-felt">
+      <!-- Draw Pile -->
+      <div class="card back" id="uno-pile" title="Piocher (الطالون)">
+        <img src="cards/back.png" alt="Pioche">
+      </div>
+      <!-- Top Card -->
+      <div id="uno-top-slot"></div>
+      <!-- Active Color Indicator -->
+      <div id="uno-cur" title="Couleur active"></div>
+    </div>
+
+    <!-- Live Status / Turn Log -->
+    <div id="uno-status-bar">
+      <div id="uno-msg"></div>
+    </div>
+
+    <!-- Player Hand -->
+    <div id="uno-hand"></div>
+
+    <!-- Action Buttons -->
+    <div id="uno-actions">
+      <button class="btn-primary" id="uno-btn-uno" style="font-size:1.1rem; padding:8px 24px;">UNO !</button>
+      <button class="btn-secondary" id="uno-btn-pass" data-i18n="unoPass">Passer</button>
+      <button class="btn-secondary" id="uno-btn-new" data-i18n="newGame">Nouvelle</button>
+    </div>
+  </div>
+</div>
+
+<!-- Uno Color Picker Modal -->
+<div class="modal-overlay" id="modal-uno-colors">
+  <div class="modal-dialog" style="text-align:center;">
+    <h3 style="margin:0 0 14px 0; color:var(--accent);" data-i18n="unoChooseColor">Choisis une couleur</h3>
+    <div id="uno-cp"></div>
+  </div>
+</div>
+
+<!-- Uno Round End / Game Over Modal -->
+<div class="modal-overlay" id="modal-uno-end">
+  <div class="modal-dialog" style="text-align:center;">
+    <h2 id="uno-end-title" style="justify-content:center; font-size:1.5rem; color:var(--accent);"></h2>
+    <p id="uno-end-desc" style="font-size:1.1rem; margin:10px 0; color:var(--fg-dim);"></p>
+    <div style="display:flex; justify-content:center; gap:10px; margin-top:14px;">
+      <button class="btn-primary" id="uno-btn-next-round" data-i18n="unoNextRound">Manche suivante</button>
+    </div>
+  </div>
+</div>
+
 
 <!-- Game Over Modal -->
 <div class="modal-overlay" id="modal-end">
@@ -1145,6 +1491,7 @@ button, select {
 </div>
 
 <script src="ronda-engine.js"></script>
+<script src="uno-engine.js"></script>
 <script src="ronda-sound.js"></script>
 
 <script>
@@ -1172,6 +1519,11 @@ const I18N = {
     cardsWon: "cartes",
     announce: "Annoncer !",
     rulesTitle: "Règles & Mode d'essai",
+    tabRonda: "Ronda Maroc",
+    tabUno: "Uno Maroc",
+    unoPass: "Passer",
+    unoChooseColor: "Choisis une couleur",
+    unoNextRound: "Manche suivante",
     tabRules: "Règles complètes",
     tabTrial: "Mode d'essai interactif",
     settingsTitle: "Réglages de règles",
@@ -1224,6 +1576,11 @@ const I18N = {
     cardsWon: "كوارط",
     announce: "علّي صوتك !",
     rulesTitle: "قواعد الروندا وطريقة اللعب",
+    tabRonda: "روندا المغربية",
+    tabUno: "أونو مغربي",
+    unoPass: "دوز",
+    unoChooseColor: "عزل اللون",
+    unoNextRound: "الشوط الموالي",
     tabRules: "القواعد الأصلية",
     tabTrial: "جرّب وتعلّم (وضع تفاعلي)",
     settingsTitle: "قواعد وتظبيط الطرح",
@@ -1292,6 +1649,10 @@ function applyLanguage(lang) {
   });
 
   $("btn-lang").textContent = (lang === 'fr') ? "🇲🇦 دارجة" : "🇫🇷 Français";
+
+  if (window.UnoGameController && window.UnoGameController.isStarted()) {
+    window.UnoGameController.render();
+  }
 
   // Translate Settings Select Options
   const selectTranslations = {
@@ -2233,6 +2594,267 @@ function updateAudioUI(state) {
 }
 
 /* =====================================================================
+   UNO MAROC CONTROLLER — Carta Sghira Authentique, Bilingue, Sons
+   ===================================================================== */
+const UnoGameController = (() => {
+  const SUIT = { R: "copas", Y: "oros", G: "bastos", B: "espadas" };
+  const SUIT_AR = { copas: "الكواص", oros: "الذهب", bastos: "الزرواطة", espadas: "السيوف" };
+  const SUIT_OFFSET = { copas: 0, oros: 10, bastos: 20, espadas: 30 };
+  const NAMES = ["Toi", "Simo", "Yassine", "Salma"];
+  const NAMES_AR = ["أنت", "سيمو", "ياسين", "سلمى"];
+
+  const FACE = {
+    S: { n: "10", nm: "SOTA", arNm: "الشيخ", bd: "⊘ PASSE", arBd: "⊘ دوز", cls: "sota" },
+    R: { n: "11", nm: "CABALLO", arNm: "العود", bd: "⇄ SENS", arBd: "⇄ بدل", cls: "caballo" },
+    D2: { n: "12", nm: "REY", arNm: "الملك", bd: "+2", arBd: "+2", cls: "rey" }
+  };
+
+  let g = null, busy = false, log = [], gen = 0, unoOn = false, pending = null;
+
+  function getCardSrc(c) {
+    if (c.color === "W") return c.value === "D4" ? "cards/wild_d4.png" : "cards/wild.png";
+    const s = SUIT[c.color];
+    if (c.value === "0") return `cards/${s}_0.png`;
+    if (c.value >= "1" && c.value <= "7") {
+      const r = parseInt(c.value, 10);
+      return `cards/${SUIT_OFFSET[s] + (r - 1)}.png`;
+    }
+    if (c.value === "8") return `cards/${s}_8.png`;
+    if (c.value === "9") return `cards/${s}_9.png`;
+    if (c.value === "S") return `cards/${SUIT_OFFSET[s] + 7}.png`;
+    if (c.value === "R") return `cards/${SUIT_OFFSET[s] + 8}.png`;
+    if (c.value === "D2") return `cards/${SUIT_OFFSET[s] + 9}.png`;
+    return "cards/back.png";
+  }
+
+  function cardEl(id) {
+    const c = Uno.CARDS[id];
+    const e = document.createElement("div");
+    e.className = "card";
+    e.setAttribute("data-id", id);
+
+    const img = document.createElement("img");
+    img.src = getCardSrc(c);
+    img.alt = label(id);
+    e.appendChild(img);
+
+    if (c.color === "W") {
+      const badge = document.createElement("span");
+      badge.className = "uno-badge " + (c.value === "D4" ? "d4" : "wild");
+      badge.textContent = c.value === "D4" ? "+4" : "★";
+      e.appendChild(badge);
+    } else if (FACE[c.value]) {
+      const f = FACE[c.value];
+      const badge = document.createElement("span");
+      badge.className = "uno-badge " + f.cls;
+      badge.textContent = currentLang === 'ar' ? f.arBd : f.bd;
+      e.appendChild(badge);
+    }
+    return e;
+  }
+
+  function label(id) {
+    const c = Uno.CARDS[id], f = FACE[c.value];
+    if (c.color === "W") return c.value === "D4" ? (currentLang === 'ar' ? "جوكير +4" : "Joker +4") : (currentLang === 'ar' ? "جوكير" : "Joker");
+    const sName = currentLang === 'ar' ? SUIT_AR[SUIT[c.color]] : SUIT[c.color];
+    const fName = f ? (currentLang === 'ar' ? f.arNm : f.nm) : c.value;
+    return currentLang === 'ar' ? `${fName} د ${sName}` : `${fName} de ${sName}`;
+  }
+
+  function say(ev) {
+    for (const e of ev) {
+      const pName = currentLang === 'ar' ? NAMES_AR[e.player] : NAMES[e.player];
+      if (e.type === "play" && e.player !== 0) {
+        const c = Uno.CARDS[e.card];
+        const sDesc = c.color === "W" ? (currentLang === 'ar' ? " → " + SUIT_AR[SUIT[e.color]] : " → " + SUIT[e.color]) : "";
+        log.push(currentLang === 'ar' ? `${pName} لعب ${label(e.card)}${sDesc}` : `${pName} joue ${label(e.card)}${sDesc}.`);
+        RondaSound.play('slap');
+      } else if (e.type === "draw" && e.count) {
+        if (e.player === 0) {
+          log.push(currentLang === 'ar' ? `تيريتي ${e.count} كارطة` : `Tu pioches ${e.count} carte${e.count > 1 ? "s" : ""}.`);
+        } else {
+          log.push(currentLang === 'ar' ? `${pName} تيرى ${e.count} كارطة` : `${pName} pioche ${e.count} carte${e.count > 1 ? "s" : ""}.`);
+        }
+        RondaSound.play('deal');
+      } else if (e.type === "uno") {
+        log.push(currentLang === 'ar' ? `${pName} : أونو !` : `${pName} : UNO !`);
+        RondaSound.playVoice('ronda');
+      } else if (e.type === "unoMissed" && e.player === 0) {
+        log.push(currentLang === 'ar' ? "نسيتي أونو ! : +2 كارطات عقوبة" : "Tu as oublié UNO ! : +2 cartes");
+        RondaSound.play('bount');
+      } else if (e.type === "reverse") {
+        log.push(currentLang === 'ar' ? "تبدلات الدورة ⇄" : "Changement de sens ⇄");
+      } else if (e.type === "skip") {
+        const victim = currentLang === 'ar' ? NAMES_AR[e.player] : NAMES[e.player];
+        log.push(currentLang === 'ar' ? `${victim} داز تور ديالو ⊘` : `${victim} passe son tour ⊘`);
+      } else if (e.type === "roundEnd") {
+        const wName = currentLang === 'ar' ? NAMES_AR[e.winner] : NAMES[e.winner];
+        $("uno-end-title").textContent = e.winner === 0 
+          ? (currentLang === 'ar' ? "ربحتي الشوط ! 🎉" : "Manche gagnée ! 🎉") 
+          : (currentLang === 'ar' ? `${wName} ربح الشوط` : `${wName} gagne la manche`);
+        $("uno-end-desc").textContent = "+" + e.points + " pts · " + e.scores.map((s, i) => (currentLang === 'ar' ? NAMES_AR[i] : NAMES[i]) + " " + s).join(" · ");
+        $("uno-btn-next-round").style.display = "";
+        $("modal-uno-end").style.display = "flex";
+        RondaSound.play(e.winner === 0 ? 'win' : 'lose');
+      } else if (e.type === "gameOver") {
+        const wName = currentLang === 'ar' ? NAMES_AR[e.winner] : NAMES[e.winner];
+        $("uno-end-title").textContent = e.winner === 0 
+          ? (currentLang === 'ar' ? "ربحتي الطرح كامل ! 🏆" : "Tu as gagné la partie ! 🏆") 
+          : (currentLang === 'ar' ? `${wName} ربح الطرح 🏆` : `${wName} gagne la partie`);
+        $("uno-btn-next-round").style.display = "none";
+        RondaSound.play(e.winner === 0 ? 'win' : 'lose');
+      }
+    }
+    log = log.slice(-3);
+  }
+
+  function render() {
+    if (!g) return;
+    const v = g.view(0);
+    $("uno-score-me").textContent = v.scores[0];
+    const maxOpp = Math.max(...v.scores.slice(1));
+    $("uno-score-leader").textContent = maxOpp;
+    $("uno-round-num").textContent = v.round;
+
+    $("uno-opps").innerHTML = v.counts.map((n, i) => {
+      if (!i) return "";
+      const name = currentLang === 'ar' ? NAMES_AR[i] : NAMES[i];
+      const isTurn = v.turn === i && !v.roundOver;
+      return `<div class="uno-op${isTurn ? " t" : ""}"><b>${name}</b> ${n} 🂠 · ${v.scores[i]} pts</div>`;
+    }).join("");
+
+    $("uno-top-slot").innerHTML = "";
+    $("uno-top-slot").appendChild(cardEl(v.top));
+
+    const curSuit = SUIT[v.color];
+    $("uno-cur").innerHTML = `<svg style="width:80%; height:80%;"><use href="#${curSuit}"/></svg>`;
+
+    const h = $("uno-hand");
+    h.innerHTML = "";
+    const mine = v.turn === 0 && !v.roundOver && !v.over && !busy;
+    v.hand.forEach(id => {
+      const e = cardEl(id);
+      const ok = mine && v.legal.includes(id);
+      e.classList.add(ok ? "ok" : "no");
+      if (ok) e.onclick = () => humanPlay(id);
+      h.appendChild(e);
+    });
+
+    $("uno-btn-pass").disabled = !(mine && v.drawn != null);
+    $("uno-btn-uno").classList.toggle("on", unoOn);
+    $("uno-pile").style.opacity = mine && v.drawn == null ? "1" : "0.55";
+
+    let promptText = "";
+    if (mine) {
+      promptText = v.drawn != null 
+        ? (currentLang === 'ar' ? "<br><b>لعب الكارطة اللي تيريتي ولا دوز</b>" : "<br><b>Joue la carte piochée ou passe</b>")
+        : (currentLang === 'ar' ? "<br><b>نوبتك تلعب !</b>" : "<br><b>À toi de jouer !</b>");
+    }
+    $("uno-msg").innerHTML = log.join("<br>") + promptText;
+  }
+
+  function humanPlay(id, color) {
+    const c = Uno.CARDS[id];
+    if (c.color === "W" && !color) {
+      pending = id;
+      $("modal-uno-colors").style.display = "flex";
+      return;
+    }
+    RondaSound.play('slap');
+    say(g.play(0, id, color || null, unoOn));
+    unoOn = false;
+    render();
+    loop();
+  }
+
+  function loop() {
+    if (g.over || g.roundOver || g.turn === 0) {
+      busy = false;
+      render();
+      return;
+    }
+    busy = true;
+    const my = gen;
+    render();
+    setTimeout(() => {
+      if (my !== gen) return;
+      say(g.aiStep());
+      loop();
+    }, 850);
+  }
+
+  function start() {
+    gen++;
+    busy = false;
+    log = [];
+    unoOn = false;
+    $("modal-uno-end").style.display = "none";
+    g = new Uno.Game({
+      players: +$("uno-np").value,
+      difficulty: $("uno-lv").value,
+      target: 500
+    });
+    say(g.drain());
+    loop();
+  }
+
+  function init() {
+    $("uno-pile").onclick = () => {
+      if (busy || g.turn !== 0 || g.roundOver || g.over || g.drawn != null) return;
+      RondaSound.play('deal');
+      say(g.draw1(0));
+      render();
+      loop();
+    };
+
+    $("uno-btn-pass").onclick = () => {
+      if (g.turn !== 0 || g.drawn == null) return;
+      say(g.pass(0));
+      render();
+      loop();
+    };
+
+    $("uno-btn-uno").onclick = () => {
+      unoOn = !unoOn;
+      if (unoOn) RondaSound.playVoice('ronda');
+      render();
+    };
+
+    $("uno-btn-new").onclick = start;
+    $("uno-np").onchange = start;
+    $("uno-lv").onchange = start;
+
+    $("uno-cp").innerHTML = ["R", "Y", "G", "B"].map(c => `
+      <button data-c="${c}">
+        <svg style="width:40px; height:40px; pointer-events:none;"><use href="#${SUIT[c]}"/></svg>
+        <span>${SUIT[c].toUpperCase()}</span>
+      </button>
+    `).join("");
+
+    $("uno-cp").onclick = e => {
+      const b = e.target.closest("button");
+      if (!b || pending == null) return;
+      $("modal-uno-colors").style.display = "none";
+      const id = pending;
+      pending = null;
+      humanPlay(id, b.dataset.c);
+    };
+
+    $("uno-btn-next-round").onclick = () => {
+      $("modal-uno-end").style.display = "none";
+      g.nextRound();
+      log = [];
+      loop();
+    };
+
+    start();
+  }
+
+  return { init, render, start, isStarted: () => g !== null };
+})();
+window.UnoGameController = UnoGameController;
+
+/* =====================================================================
    EVENT LISTENERS & INITIALIZATION
    ===================================================================== */
 document.addEventListener("DOMContentLoaded", () => {
@@ -2277,6 +2899,44 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // App Navigation Tabs
+  function switchTab(tab) {
+    if (tab === 'ronda') {
+      $("ronda-view").style.display = "";
+      $("uno-view").style.display = "none";
+      $("tab-btn-ronda").classList.add("active");
+      $("tab-btn-uno").classList.remove("active");
+      $("btn-rules").style.display = "";
+      $("btn-settings").style.display = "";
+      $("btn-stats").style.display = "";
+      try { history.replaceState(null, '', '#ronda'); } catch(e) {}
+    } else if (tab === 'uno') {
+      $("ronda-view").style.display = "none";
+      $("uno-view").style.display = "";
+      $("tab-btn-ronda").classList.remove("active");
+      $("tab-btn-uno").classList.add("active");
+      $("btn-rules").style.display = "none";
+      $("btn-settings").style.display = "none";
+      $("btn-stats").style.display = "none";
+      try { history.replaceState(null, '', '#uno'); } catch(e) {}
+      if (!UnoGameController.isStarted()) {
+        UnoGameController.init();
+      } else {
+        UnoGameController.render();
+      }
+    }
+  }
+  $("tab-btn-ronda").onclick = () => switchTab('ronda');
+  $("tab-btn-uno").onclick = () => switchTab('uno');
+
+  if (window.location.hash === '#uno') {
+    switchTab('uno');
+  }
+  window.addEventListener('hashchange', () => {
+    if (window.location.hash === '#uno') switchTab('uno');
+    else if (window.location.hash === '#ronda' || !window.location.hash) switchTab('ronda');
+  });
+
   // Language switcher
   $("btn-lang").onclick = () => {
     applyLanguage(currentLang === 'fr' ? 'ar' : 'fr');
@@ -2287,6 +2947,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // New Game
   $("btn-new").onclick = () => {
+    if ($("uno-view").style.display !== "none") {
+      UnoGameController.start();
+      return;
+    }
     if (g && !g.over && (g.scores[0] > 0 || g.scores[1] > 0 || g.round > 1 || (g.captured && (g.captured[0].length > 0 || g.captured[1].length > 0)))) {
       const msg = currentLang === 'ar'
         ? "كاين طرح باقي ملعوب دابا. واش باغي تبدا طرح جديد وتلغي هادا ؟"

@@ -1,17 +1,25 @@
-/* sw.js — Service Worker pour Ronda PWA (mode hors-ligne complet) */
-const CACHE_NAME = 'ronda-cache-v4';
+const CACHE_NAME = 'ronda-cache-v5';
 
 const CARD_ASSETS = [];
 for (let i = 0; i < 40; i++) {
   CARD_ASSETS.push(`./cards/${i}.png`);
 }
 CARD_ASSETS.push('./cards/back.png');
+['copas', 'oros', 'bastos', 'espadas'].forEach(s => {
+  CARD_ASSETS.push(`./cards/${s}_0.png`);
+  CARD_ASSETS.push(`./cards/${s}_8.png`);
+  CARD_ASSETS.push(`./cards/${s}_9.png`);
+});
+CARD_ASSETS.push('./cards/wild.png');
+CARD_ASSETS.push('./cards/wild_d4.png');
 
 const ASSETS = [
   './',
   './index.html',
   './ronda.html',
+  './uno-maroc.html',
   './ronda-engine.js',
+  './uno-engine.js',
   './ronda-sound.js',
   './manifest.json',
   './icons/icon.svg',

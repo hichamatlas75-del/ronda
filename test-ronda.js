@@ -56,6 +56,12 @@ assert.strictEqual(gCustom.cfg.missaPts, 2);
 assert.strictEqual(gCustom.cfg.bountPts, 2);
 assert.strictEqual(gCustom.cfg.cardsScoring, 'majority');
 assert.strictEqual(gCustom.cfg.missaOnLastPlay, true);
-console.log('Custom configurations applied successfully!');
+console.log('--- 6. Testing Uno Engine Self-Test (60 IA vs IA games) ---');
+const Uno = require('./uno-engine.js');
+const unoTestRes = Uno.Game.selfTest(60);
+console.log('Uno self-test results:', unoTestRes);
+assert(unoTestRes.parties === 60, 'Should complete 60 Uno games');
+assert(unoTestRes.coups > 0, 'Uno games must execute plies');
 
 console.log('=== ALL TESTS PASSED! ===');
+
