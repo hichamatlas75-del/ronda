@@ -1287,9 +1287,9 @@ button, select {
       <div class="round-info" style="display:flex; flex-direction:column; align-items:center; gap:4px;">
         <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center;">
           <select id="uno-np" aria-label="Joueurs">
-            <option value="2">2 Joueurs</option>
-            <option value="3">3 Joueurs</option>
-            <option value="4" selected>4 Joueurs</option>
+            <option value="2" selected>1 Robot (1 vs 1)</option>
+            <option value="3">2 Robots (3 Joueurs)</option>
+            <option value="4">3 Robots (4 Joueurs)</option>
           </select>
           <select id="uno-lv" aria-label="Difficulté">
             <option value="debutant">Débutant</option>
@@ -1306,7 +1306,7 @@ button, select {
       </div>
       <div class="score-col" style="text-align:right;">
         <div class="score-num" id="uno-score-leader">0</div>
-        <div><span style="font-weight:700;">Leader</span></div>
+        <div><span style="font-weight:700;" id="uno-lbl-opp-score">Adversaire</span></div>
       </div>
     </div>
 
@@ -1791,9 +1791,9 @@ function applyLanguage(lang) {
       '0': { fr: "Instantanée (0ms)", ar: "بلا حركة (0ms)" }
     },
     'uno-np': {
-      '2': { fr: "2 Joueurs", ar: "2 لعابة" },
-      '3': { fr: "3 Joueurs", ar: "3 لعابة" },
-      '4': { fr: "4 Joueurs", ar: "4 لعابة" }
+      '2': { fr: "1 Robot (1 vs 1)", ar: "1 روبوت (1 ضد 1)" },
+      '3': { fr: "2 Robots (3 Joueurs)", ar: "2 روبوتات (3 لعابة)" },
+      '4': { fr: "3 Robots (4 Joueurs)", ar: "3 روبوتات (4 لعابة)" }
     },
     'uno-lv': {
       'debutant': { fr: "Débutant", ar: "مبتدئ" },
@@ -2923,6 +2923,14 @@ const UnoGameController = (() => {
     $("uno-score-me").textContent = v.scores[0];
     const maxOpp = Math.max(...v.scores.slice(1));
     $("uno-score-leader").textContent = maxOpp;
+    const oppLabelEl = $("uno-lbl-opp-score");
+    if (oppLabelEl) {
+      if (v.counts.length === 2) {
+        oppLabelEl.textContent = currentLang === 'ar' ? NAMES_AR[1] : NAMES[1];
+      } else {
+        oppLabelEl.textContent = currentLang === 'ar' ? "المتصدر" : "Leader";
+      }
+    }
     $("uno-round-num").textContent = v.round;
 
     $("uno-opps").innerHTML = v.counts.map((n, i) => {

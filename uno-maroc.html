@@ -578,9 +578,9 @@ button:disabled {
   <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
     <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center;">
       <select id="np" aria-label="Joueurs">
-        <option value="2">2 joueurs</option>
-        <option value="3">3 joueurs</option>
-        <option value="4" selected>4 joueurs</option>
+        <option value="2" selected>1 Robot (1 vs 1)</option>
+        <option value="3">2 Robots (3 Joueurs)</option>
+        <option value="4">3 Robots (4 Joueurs)</option>
       </select>
       <select id="lv" aria-label="Difficulté">
         <option value="debutant">Débutant</option>
@@ -597,7 +597,7 @@ button:disabled {
   </div>
   <div class="score-col" style="text-align:right;">
     <div class="score-num" id="score-leader">0</div>
-    <div><span style="font-weight:700;">Leader</span></div>
+    <div><span style="font-weight:700;" id="lbl-opp-score">Adversaire</span></div>
   </div>
 </div>
 
@@ -872,6 +872,14 @@ function render(thinkingPlayer = null) {
   $("score-me").textContent = v.scores[0];
   const maxOpp = Math.max(...v.scores.slice(1));
   $("score-leader").textContent = maxOpp;
+  const oppLabelEl = $("lbl-opp-score");
+  if (oppLabelEl) {
+    if (v.counts.length === 2) {
+      oppLabelEl.textContent = currentLang === 'ar' ? NAMES_AR[1] : NAMES[1];
+    } else {
+      oppLabelEl.textContent = currentLang === 'ar' ? "المتصدر" : "Leader";
+    }
+  }
   $("round-num").textContent = v.round;
 
   // Opponents
@@ -1135,15 +1143,22 @@ $("btn-lang").onclick = () => {
   $("nw").textContent = currentLang === 'ar' ? "طرح جديد" : "Nouvelle";
   $("nx").textContent = currentLang === 'ar' ? "الشوط الموالي" : "Manche suivante";
   const cadOpts = $("cadence").options;
+  const npOpts = $("np").options;
   if (currentLang === 'ar') {
     cadOpts[0].text = "⏱️ وتيرة حقيقية";
     cadOpts[1].text = "☕ مرتاحة";
     cadOpts[2].text = "⚡ سريعة";
+    npOpts[0].text = "1 روبوت (1 ضد 1)";
+    npOpts[1].text = "2 روبوتات (3 لعابة)";
+    npOpts[2].text = "3 روبوتات (4 لعابة)";
     try { RondaSound.setVoiceLanguage('ar'); } catch(e) {}
   } else {
     cadOpts[0].text = "⏱️ Cadence Réelle";
     cadOpts[1].text = "☕ Détendue";
     cadOpts[2].text = "⚡ Rapide";
+    npOpts[0].text = "1 Robot (1 vs 1)";
+    npOpts[1].text = "2 Robots (3 Joueurs)";
+    npOpts[2].text = "3 Robots (4 Joueurs)";
     try { RondaSound.setVoiceLanguage('fr'); } catch(e) {}
   }
   render();
