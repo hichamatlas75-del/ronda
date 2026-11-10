@@ -288,6 +288,19 @@
     handle,
     say,
     playSFX,
+    play: (k) => {
+      try {
+        if (['slap', 'deal', 'capture', 'chime'].includes(k)) {
+          return playSFX(k);
+        }
+        return say(k);
+      } catch (e) {}
+    },
+    playVoice: (k, lang) => {
+      try {
+        return say(k, lang);
+      } catch (e) {}
+    },
     slap: () => playSFX('slap'),
     deal: () => playSFX('deal'),
     capture: () => playSFX('capture'),

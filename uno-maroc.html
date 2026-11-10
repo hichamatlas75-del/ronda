@@ -668,20 +668,20 @@ function say(ev) {
       const c = Uno.CARDS[e.card];
       const sDesc = c.color === "W" ? (currentLang === 'ar' ? " → " + SUIT_AR[SUIT[e.color]] : " → " + SUIT[e.color]) : "";
       log.push(currentLang === 'ar' ? `${pName} لعب ${label(e.card)}${sDesc}` : `${pName} joue ${label(e.card)}${sDesc}.`);
-      RondaSound.play('slap');
+      try { RondaSound.play('slap'); } catch(err) {}
     } else if (e.type === "draw" && e.count) {
       if (e.player === 0) {
         log.push(currentLang === 'ar' ? `تيريتي ${e.count} كارطة` : `Tu pioches ${e.count} carte${e.count > 1 ? "s" : ""}.`);
       } else {
         log.push(currentLang === 'ar' ? `${pName} تيرى ${e.count} كارطة` : `${pName} pioche ${e.count} carte${e.count > 1 ? "s" : ""}.`);
       }
-      RondaSound.play('deal');
+      try { RondaSound.play('deal'); } catch(err) {}
     } else if (e.type === "uno") {
       log.push(currentLang === 'ar' ? `${pName} : أونو !` : `${pName} : UNO !`);
-      RondaSound.playVoice('ronda');
+      try { RondaSound.playVoice('ronda'); } catch(err) {}
     } else if (e.type === "unoMissed" && e.player === 0) {
       log.push(currentLang === 'ar' ? "نسيتي أونو ! : +2 كارطات عقوبة" : "Tu as oublié UNO ! : +2 cartes");
-      RondaSound.play('bount');
+      try { RondaSound.play('bount'); } catch(err) {}
     } else if (e.type === "reverse") {
       log.push(currentLang === 'ar' ? "تبدلات الدورة ⇄" : "Changement de sens ⇄");
     } else if (e.type === "skip") {
@@ -695,14 +695,14 @@ function say(ev) {
       $("ep").textContent = "+" + e.points + " pts · " + e.scores.map((s, i) => (currentLang === 'ar' ? NAMES_AR[i] : NAMES[i]) + " " + s).join(" · ");
       $("nx").style.display = "";
       $("end").style.display = "flex";
-      RondaSound.play(e.winner === 0 ? 'win' : 'lose');
+      try { RondaSound.play(e.winner === 0 ? 'win' : 'lose'); } catch(err) {}
     } else if (e.type === "gameOver") {
       const wName = currentLang === 'ar' ? NAMES_AR[e.winner] : NAMES[e.winner];
       $("et").textContent = e.winner === 0 
         ? (currentLang === 'ar' ? "ربحتي الطرح كامل ! 🏆" : "Tu as gagné la partie ! 🏆") 
         : (currentLang === 'ar' ? `${wName} ربح الطرح 🏆` : `${wName} gagne la partie`);
       $("nx").style.display = "none";
-      RondaSound.play(e.winner === 0 ? 'win' : 'lose');
+      try { RondaSound.play(e.winner === 0 ? 'win' : 'lose'); } catch(err) {}
     }
   }
   log = log.slice(-3);
@@ -738,7 +738,15 @@ function render() {
     const e = cardEl(id);
     const ok = mine && v.legal.includes(id);
     e.classList.add(ok ? "ok" : "no");
-    if (ok) e.onclick = () => humanPlay(id);
+    if (ok) {
+      e.onclick = (ev) => {
+        if (ev) {
+          ev.preventDefault();
+          ev.stopPropagation();
+        }
+        humanPlay(id);
+      };
+    }
     h.appendChild(e);
   });
 
@@ -763,7 +771,12 @@ function humanPlay(id, color) {
     $("colors").style.display = "flex";
     return;
   }
-  RondaSound.play('slap');
+  try {
+    if (typeof RondaSound !== 'undefined') {
+      if (typeof RondaSound.play === 'function') RondaSound.play('slap');
+      else if (typeof RondaSound.playSFX === 'function') RondaSound.playSFX('slap');
+    }
+  } catch(e) {}
   say(g.play(0, id, color || null, unoOn));
   unoOn = false;
   render();
@@ -788,7 +801,7 @@ function loop() {
 
 $("pile").onclick = () => {
   if (busy || g.turn !== 0 || g.roundOver || g.over || g.drawn != null) return;
-  RondaSound.play('deal');
+  try { RondaSound.play('deal'); } catch(err) {}
   say(g.draw1(0));
   render();
   loop();
@@ -803,7 +816,9 @@ $("pass").onclick = () => {
 
 $("uno").onclick = () => {
   unoOn = !unoOn;
-  if (unoOn) RondaSound.playVoice('ronda');
+  if (unoOn) {
+    try { RondaSound.playVoice('ronda'); } catch(err) {}
+  }
   render();
 };
 

@@ -63,5 +63,9 @@ console.log('Uno self-test results:', unoTestRes);
 assert(unoTestRes.parties === 60, 'Should complete 60 Uno games');
 assert(unoTestRes.coups > 0, 'Uno games must execute plies');
 
+console.log('--- 7. Testing Browser Click & Audio Integration (Headless Chrome) ---');
+const { execSync } = require('child_process');
+execSync('node test-browser-click.js', { stdio: 'inherit' });
+
 console.log('=== ALL TESTS PASSED! ===');
 
