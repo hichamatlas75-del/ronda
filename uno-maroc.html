@@ -455,6 +455,52 @@ button:disabled {
   100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 }
 
+/* 3D Realistic Parabolic Flight & Flip */
+.card-flight-3d {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  perspective: 1200px;
+  will-change: transform, left, top;
+}
+
+.card-flight-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  border-radius: var(--card-radius);
+  transition: transform cubic-bezier(0.2, 0.85, 0.3, 1), box-shadow 0.25s ease;
+  will-change: transform, box-shadow;
+}
+
+.card-flight-face {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--card-radius);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+}
+
+.card-flight-back {
+  transform: rotateY(0deg);
+}
+
+.card-flight-front {
+  transform: rotateY(180deg);
+}
+
+.card-flight-front img,
+.card-flight-back img {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+}
+
 /* Action Controls */
 #acts {
   display: flex;
@@ -1111,52 +1157,85 @@ function delay(ms) {
   return new Promise(res => setTimeout(res, ms));
 }
 
-function animateUnoFlight(fromEl, toEl, cardId, isBack = false, duration = 380) {
+function animateUnoFlight(fromEl, toEl, cardId, isBack = false, duration = 380, options = {}) {
   return new Promise(resolve => {
     if (!fromEl || !toEl) return resolve();
     const r1 = fromEl.getBoundingClientRect();
     const r2 = toEl.getBoundingClientRect();
     if (!r1.width || !r2.width) return resolve();
 
-    const fly = document.createElement("div");
-    fly.className = "card card-flying";
-    fly.style.position = "fixed";
-    fly.style.zIndex = "9999";
-    fly.style.left = `${r1.left}px`;
-    fly.style.top = `${r1.top}px`;
-    fly.style.width = `${r1.width || 72}px`;
-    fly.style.height = `${r1.height || 108}px`;
-    fly.style.pointerEvents = "none";
-    fly.style.transition = `all ${duration}ms cubic-bezier(0.22, 1, 0.36, 1)`;
-    fly.style.boxShadow = "0 14px 28px rgba(0,0,0,0.5)";
+    const isFlip = !!options.isFlip;
+    const lift = options.lift != null ? options.lift : 35;
+    const rotStart = options.rotStart || 0;
+    const rotEnd = options.rotEnd != null ? options.rotEnd : (Math.random() - 0.5) * 8;
 
-    const img = document.createElement("img");
-    if (isBack || cardId == null) {
-      img.src = "cards/back.png";
-    } else {
+    const container = document.createElement("div");
+    container.className = "card-flight-3d";
+    container.style.left = `${r1.left}px`;
+    container.style.top = `${r1.top}px`;
+    container.style.width = `${r1.width || 72}px`;
+    container.style.height = `${r1.height || 108}px`;
+    container.style.transition = `left ${duration}ms cubic-bezier(0.25, 0.9, 0.35, 1),
+                                  top ${duration}ms cubic-bezier(0.25, 0.9, 0.35, 1),
+                                  width ${duration}ms ease,
+                                  height ${duration}ms ease`;
+
+    const inner = document.createElement("div");
+    inner.className = "card-flight-inner";
+    inner.style.transition = `transform ${duration}ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow ${duration}ms ease`;
+    inner.style.transform = `rotateZ(${rotStart}deg) scale(1)`;
+    inner.style.boxShadow = `0 4px 10px rgba(0,0,0,0.35)`;
+
+    const backFace = document.createElement("div");
+    backFace.className = "card-flight-face card-flight-back";
+    const backImg = document.createElement("img");
+    backImg.src = "cards/back.png";
+    backFace.appendChild(backImg);
+
+    const frontFace = document.createElement("div");
+    frontFace.className = "card-flight-face card-flight-front";
+    if (cardId != null) {
+      const frontImg = document.createElement("img");
       const c = Uno.CARDS[cardId];
-      img.src = getCardSrc(c);
+      frontImg.src = getCardSrc(c);
+      frontFace.appendChild(frontImg);
     }
-    img.style.width = "100%";
-    img.style.height = "100%";
-    img.style.borderRadius = "8px";
-    fly.appendChild(img);
 
-    document.body.appendChild(fly);
-    fly.getBoundingClientRect();
+    if (isFlip) {
+      backFace.style.transform = "rotateY(0deg)";
+      frontFace.style.transform = "rotateY(180deg)";
+      inner.appendChild(backFace);
+      inner.appendChild(frontFace);
+    } else if (isBack || cardId == null) {
+      inner.appendChild(backFace);
+    } else {
+      frontFace.style.transform = "rotateY(0deg)";
+      inner.appendChild(frontFace);
+    }
+
+    container.appendChild(inner);
+    document.body.appendChild(container);
+    container.getBoundingClientRect();
 
     const targetW = r2.width || r1.width || 72;
     const targetH = r2.height || r1.height || 108;
-    fly.style.left = `${r2.left}px`;
-    fly.style.top = `${r2.top}px`;
-    fly.style.width = `${targetW}px`;
-    fly.style.height = `${targetH}px`;
-    fly.style.transform = `scale(1.05) rotate(${(Math.random() - 0.5) * 8}deg)`;
+    container.style.left = `${r2.left}px`;
+    container.style.top = `${r2.top}px`;
+    container.style.width = `${targetW}px`;
+    container.style.height = `${targetH}px`;
+
+    const flipRotY = isFlip ? 180 : 0;
+    inner.style.transform = `rotateY(${flipRotY}deg) rotateZ(${rotEnd}deg) scale(1.03)`;
+    inner.style.boxShadow = `0 ${lift}px ${lift * 1.4}px rgba(0,0,0,0.45)`;
 
     setTimeout(() => {
-      if (fly.parentNode) fly.parentNode.removeChild(fly);
+      inner.style.boxShadow = `0 4px 10px rgba(0,0,0,0.3)`;
+    }, duration * 0.75);
+
+    setTimeout(() => {
+      if (container.parentNode) container.parentNode.removeChild(container);
       resolve();
-    }, duration + 30);
+    }, duration + 25);
   });
 }
 
@@ -1259,13 +1338,13 @@ async function animateCasinoDealUno() {
       const opEl = $("op-" + p);
       if (opEl) {
         try { RondaSound.playSFX('deal'); } catch(e) {}
-        await animateUnoFlight(pileEl, opEl, null, true, 160);
+        await animateUnoFlight(pileEl, opEl, null, true, 160, { lift: 25, rotEnd: (Math.random() - 0.5) * 8 });
         await delay(30);
       }
     }
     if (v.hand[round] != null) {
       try { RondaSound.playSFX('deal'); } catch(e) {}
-      await animateUnoFlight(pileEl, handEl, v.hand[round], false, 180);
+      await animateUnoFlight(pileEl, handEl, v.hand[round], false, 180, { lift: 30, rotEnd: (Math.random() - 0.5) * 6 });
       const cardNode = cardEl(v.hand[round]);
       cardNode.classList.add("card-land");
       const ok = (v.turn === 0) && v.legal.includes(v.hand[round]);
@@ -1277,7 +1356,8 @@ async function animateCasinoDealUno() {
   }
 
   try { RondaSound.playSFX('deal'); } catch(e) {}
-  await animateUnoFlight(pileEl, topSlotEl, v.top, false, 240);
+  // 3D Flip 180° for the first card revealed on the discard slot
+  await animateUnoFlight(pileEl, topSlotEl, v.top, false, 260, { isFlip: true, lift: 45, rotEnd: 0 });
   const topCardNode = cardEl(v.top);
   topCardNode.classList.add("card-land");
   topSlotEl.innerHTML = "";

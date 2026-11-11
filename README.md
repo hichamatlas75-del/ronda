@@ -128,4 +128,4 @@ npm run test:joker
 npm start
 # ou : node server.js
 ```
-Tous les tests valident la conservation stricte des 40 cartes (Ronda) et 108 cartes (Uno), la sérialisation/restauration, le décompte des points, les annonces manuelles, l'affichage de la main restante sous les yeux lors du déploiement d'un joker, et les interactions dans le navigateur.
+Tous les tests valident la conservation stricte des 40 cartes (Ronda) et 108 cartes (Uno), la sérialisation/restauration, le décompte des points, les annonces manuelles, l'affichage de la main restante sous les yeux lors du déploiement d'un joker, la distribution 3D réaliste (rituel marocain 3 par 3, retournement 3D flip des cartes de table et éventail naturel en main), et les interactions dans le navigateur.
