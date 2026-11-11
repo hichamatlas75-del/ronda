@@ -1157,6 +1157,19 @@ function delay(ms) {
   return new Promise(res => setTimeout(res, ms));
 }
 
+function preloadUnoAssets() {
+  const images = ['cards/back.png', 'cards/wild.png', 'cards/wild_d4.png'];
+  for (let i = 0; i < 40; i++) images.push(`cards/${i}.png`);
+  ['copas', 'oros', 'bastos', 'espadas'].forEach(s => {
+    images.push(`cards/${s}_0.png`, `cards/${s}_8.png`, `cards/${s}_9.png`);
+  });
+  images.forEach(src => {
+    const img = new Image();
+    img.src = src;
+  });
+}
+preloadUnoAssets();
+
 function animateUnoFlight(fromEl, toEl, cardId, isBack = false, duration = 380, options = {}) {
   return new Promise(resolve => {
     if (!fromEl || !toEl) return resolve();
@@ -1169,16 +1182,17 @@ function animateUnoFlight(fromEl, toEl, cardId, isBack = false, duration = 380, 
     const rotStart = options.rotStart || 0;
     const rotEnd = options.rotEnd != null ? options.rotEnd : (Math.random() - 0.5) * 8;
 
+    const cardW = (r1.width && r1.width < 120) ? r1.width : 72;
+    const cardH = (r1.height && r1.height < 180) ? r1.height : 108;
+
     const container = document.createElement("div");
     container.className = "card-flight-3d";
     container.style.left = `${r1.left}px`;
     container.style.top = `${r1.top}px`;
-    container.style.width = `${r1.width || 72}px`;
-    container.style.height = `${r1.height || 108}px`;
+    container.style.width = `${cardW}px`;
+    container.style.height = `${cardH}px`;
     container.style.transition = `left ${duration}ms cubic-bezier(0.25, 0.9, 0.35, 1),
-                                  top ${duration}ms cubic-bezier(0.25, 0.9, 0.35, 1),
-                                  width ${duration}ms ease,
-                                  height ${duration}ms ease`;
+                                  top ${duration}ms cubic-bezier(0.25, 0.9, 0.35, 1)`;
 
     const inner = document.createElement("div");
     inner.className = "card-flight-inner";
@@ -1217,25 +1231,34 @@ function animateUnoFlight(fromEl, toEl, cardId, isBack = false, duration = 380, 
     document.body.appendChild(container);
     container.getBoundingClientRect();
 
-    const targetW = r2.width || r1.width || 72;
-    const targetH = r2.height || r1.height || 108;
-    container.style.left = `${r2.left}px`;
-    container.style.top = `${r2.top}px`;
-    container.style.width = `${targetW}px`;
-    container.style.height = `${targetH}px`;
+    let targetX = r2.left;
+    let targetY = r2.top;
+    if (r2.width > cardW * 1.4) {
+      targetX = r2.left + (r2.width - cardW) / 2;
+      targetY = r2.top + (r2.height - cardH) / 2;
+    }
+
+    container.style.left = `${targetX}px`;
+    container.style.top = `${targetY}px`;
 
     const flipRotY = isFlip ? 180 : 0;
     inner.style.transform = `rotateY(${flipRotY}deg) rotateZ(${rotEnd}deg) scale(1.03)`;
     inner.style.boxShadow = `0 ${lift}px ${lift * 1.4}px rgba(0,0,0,0.45)`;
 
+    let finished = false;
+    const done = () => {
+      if (finished) return;
+      finished = true;
+      if (container.parentNode) container.parentNode.removeChild(container);
+      resolve();
+    };
+
     setTimeout(() => {
       inner.style.boxShadow = `0 4px 10px rgba(0,0,0,0.3)`;
     }, duration * 0.75);
 
-    setTimeout(() => {
-      if (container.parentNode) container.parentNode.removeChild(container);
-      resolve();
-    }, duration + 25);
+    container.addEventListener('transitionend', done);
+    setTimeout(done, duration + 35);
   });
 }
 

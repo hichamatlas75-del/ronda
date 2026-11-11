@@ -103,6 +103,94 @@ async function run() {
     await send('Page.enable');
     await send('Runtime.enable');
 
+    console.log('\n--- 0. Testing Ronda Realistic Card Throw Animation (Zero White Glare, Zero Overshoot) ---');
+    await send('Page.navigate', { url: 'http://localhost:8080/index.html' });
+    await delay(1000);
+    for (let i = 0; i < 40; i++) {
+      const ready = await send('Runtime.evaluate', {
+        expression: 'document.querySelectorAll("#table-cards .card").length === 4 && document.querySelectorAll("#my-hand .card").length === 3 && document.querySelectorAll("#opp-hand .card").length === 3 && document.querySelectorAll(".card-flight-3d, .flying-card").length === 0',
+        returnByValue: true
+      });
+      if (ready.result?.result?.value) break;
+      await delay(200);
+    }
+
+    // Verify board and deal card dimensions
+    const dealCheck = await send('Runtime.evaluate', {
+      expression: `(() => {
+        const tableCards = document.querySelectorAll("#table-cards .card");
+        const handCards = document.querySelectorAll("#my-hand .card");
+        const oppCards = document.querySelectorAll("#opp-hand .card");
+        const flying = document.querySelectorAll(".flying-card, .card-flight-3d");
+        return {
+          tableCount: tableCards.length,
+          handCount: handCards.length,
+          oppCount: oppCards.length,
+          flyingCount: flying.length,
+          firstTableCardWidth: tableCards[0]?.getBoundingClientRect().width,
+          firstOppCardWidth: oppCards[0]?.getBoundingClientRect().width
+        };
+      })()`,
+      returnByValue: true
+    });
+    console.log('Ronda board after deal check:', dealCheck.result?.result?.value);
+    assert(dealCheck.result?.result?.value?.tableCount === 4, 'Table must have 4 cards');
+    assert(dealCheck.result?.result?.value?.handCount === 3, 'Hand must have 3 cards');
+    assert(dealCheck.result?.result?.value?.oppCount === 3, 'Opponent must have 3 cards');
+    assert(dealCheck.result?.result?.value?.flyingCount === 0, 'No orphaned flying cards after deal');
+    assert(dealCheck.result?.result?.value?.firstOppCardWidth < 110, 'Opponent card must not stretch to container width');
+
+    // Test Human Play Flight Animation
+    console.log('Testing Human Card Throw Flight...');
+    const humanFlightPromise = send('Runtime.evaluate', {
+      expression: `(async () => {
+        const card = document.querySelector("#my-hand .card");
+        const cid = parseInt(card.dataset.cardId);
+        return humanPlay(cid);
+      })()`,
+      awaitPromise: false
+    });
+
+    await delay(120); // Capture mid-flight
+    const flightMetrics = await send('Runtime.evaluate', {
+      expression: `(() => {
+        const flying = document.querySelector(".flying-card, .card-flight-3d");
+        if (!flying) return { found: false };
+        const rect = flying.getBoundingClientRect();
+        const style = window.getComputedStyle(flying);
+        const transform = style.transform;
+        return {
+          found: true,
+          width: rect.width,
+          height: rect.height,
+          left: rect.left,
+          top: rect.top,
+          transform: transform
+        };
+      })()`,
+      returnByValue: true
+    });
+    console.log('Human card flight metrics:', flightMetrics.result?.result?.value);
+    if (flightMetrics.result?.result?.value?.found) {
+      assert(flightMetrics.result?.result?.value?.width < 120, 'Flying card must not be scaled up to container width (>120px)');
+      assert(flightMetrics.result?.result?.value?.left >= -10, 'Card must not fly off-screen horizontally');
+      assert(flightMetrics.result?.result?.value?.top >= -10, 'Card must not fly off-screen vertically');
+    }
+
+    await delay(2000); // wait for AI response and state settling
+    const postPlayCheck = await send('Runtime.evaluate', {
+      expression: `(() => {
+        const flying = document.querySelectorAll(".flying-card, .card-flight-3d");
+        return {
+          flyingCount: flying.length,
+          handCount: document.querySelectorAll("#my-hand .card").length
+        };
+      })()`,
+      returnByValue: true
+    });
+    console.log('Post-play state check:', postPlayCheck.result?.result?.value);
+    assert(postPlayCheck.result?.result?.value?.flyingCount === 0, 'Zero lingering flying cards after play and AI turn');
+
     console.log('\n--- 1. Testing Uno Tab in index.html ---');
     await send('Page.navigate', { url: 'http://localhost:8080/#uno' });
     await delay(1500);

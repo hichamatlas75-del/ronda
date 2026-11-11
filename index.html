@@ -2351,45 +2351,176 @@ function makeCardBack() {
   return e;
 }
 
-// FLIP Animation from rectA to rectB
+// Preload all 40 authentic Ronda cards + back immediately into browser memory
+function preloadRondaAssets() {
+  const images = ['cards/back.png'];
+  for (let i = 0; i < 40; i++) images.push(`cards/${i}.png`);
+  images.forEach(src => {
+    const img = new Image();
+    img.src = src;
+  });
+}
+preloadRondaAssets();
+
+// FLIP Animation from rectA to rectB (natural card dimensions, 0 white reflection, 0 screen overshoot)
 function animateFlight(elA, elB, cardId, isBack = false) {
   const speed = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--anim-speed')) || 0;
-  if (speed <= 0) return Promise.resolve();
+  if (speed <= 0 || !elA || !elB) return Promise.resolve();
 
   return new Promise(resolve => {
     const rectA = elA.getBoundingClientRect();
     const rectB = elB.getBoundingClientRect();
+    if (!rectA.width || !rectB.width) return resolve();
 
-    const clone = isBack ? makeCardBack() : makeCardEl(cardId);
-    clone.classList.add('flying-card');
-    clone.style.left = rectA.left + 'px';
-    clone.style.top = rectA.top + 'px';
-    clone.style.width = rectA.width + 'px';
-    clone.style.height = rectA.height + 'px';
-    clone.style.transform = 'translate(0px, 0px) scale(1)';
-    clone.style.opacity = '1';
-    document.body.appendChild(clone);
+    const isTableTarget = (elB.id === 'table-cards') || (rectB.width > rectA.width * 1.5);
+    const isPileTarget = !!elB.closest?.('.won-pile') || elB.classList?.contains('mini-card-stack') || (rectB.width < rectA.width * 0.8);
 
-    requestAnimationFrame(() => {
+    const cardW = rectA.width || 68;
+    const cardH = rectA.height || 102;
+
+    let targetLeft, targetTop, scale = 1;
+
+    if (isTableTarget) {
+      scale = 1;
+      const playedRank = (cardId != null && Ronda.CARDS && Ronda.CARDS[cardId]) ? Ronda.CARDS[cardId].rank : null;
+      let matchingCard = null;
+      if (playedRank != null) {
+        const tableCards = Array.from(elB.querySelectorAll('.card:not(.flying-card)'));
+        matchingCard = tableCards.find(c => {
+          const cid = parseInt(c.dataset.cardId);
+          return cid != null && Ronda.CARDS[cid]?.rank === playedRank;
+        });
+      }
+
+      if (matchingCard) {
+        const mRect = matchingCard.getBoundingClientRect();
+        targetLeft = mRect.left + (Math.random() - 0.5) * 6;
+        targetTop = mRect.top + (Math.random() - 0.5) * 6;
+      } else {
+        const existing = Array.from(elB.querySelectorAll('.card:not(.flying-card)'));
+        if (existing.length === 0) {
+          targetLeft = rectB.left + (rectB.width - cardW) / 2;
+          targetTop = rectB.top + (rectB.height - cardH) / 2;
+        } else {
+          const isRtl = document.documentElement.dir === 'rtl' || (typeof currentLang !== 'undefined' && currentLang === 'ar');
+          const last = existing[existing.length - 1];
+          const lastRect = last.getBoundingClientRect();
+          if (isRtl) {
+            targetLeft = lastRect.left - cardW - 8;
+            if (targetLeft < rectB.left + 6) {
+              targetLeft = rectB.left + (rectB.width - cardW) / 2;
+            }
+          } else {
+            targetLeft = lastRect.right + 8;
+            if (targetLeft + cardW > rectB.right - 6) {
+              targetLeft = rectB.left + (rectB.width - cardW) / 2;
+            }
+          }
+          targetTop = lastRect.top;
+        }
+      }
+
+      targetLeft = Math.max(rectB.left + 4, Math.min(rectB.right - cardW - 4, targetLeft));
+      targetTop = Math.max(rectB.top + 4, Math.min(rectB.bottom - cardH - 4, targetTop || (rectB.top + (rectB.height - cardH) / 2)));
+    } else if (isPileTarget) {
+      scale = Math.min(1, Math.max(0.38, rectB.width / cardW));
+      targetLeft = rectB.left + (rectB.width - cardW * scale) / 2;
+      targetTop = rectB.top + (rectB.height - cardH * scale) / 2;
+    } else {
+      scale = 1;
+      targetLeft = rectB.left;
+      targetTop = rectB.top;
+    }
+
+    const isOpponentHandPlay = !isBack && (elA.closest?.('#opp-hand') || elA.classList?.contains('back')) && (cardId != null);
+
+    let flyingEl;
+    if (isOpponentHandPlay) {
+      flyingEl = document.createElement('div');
+      flyingEl.className = 'card-flight-3d flying-card';
+      flyingEl.style.left = `${rectA.left}px`;
+      flyingEl.style.top = `${rectA.top}px`;
+      flyingEl.style.width = `${cardW}px`;
+      flyingEl.style.height = `${cardH}px`;
+      flyingEl.style.transition = `left ${speed}ms cubic-bezier(0.25, 0.9, 0.35, 1), top ${speed}ms cubic-bezier(0.25, 0.9, 0.35, 1)`;
+
+      const inner = document.createElement('div');
+      inner.className = 'card-flight-inner';
+      inner.style.transition = `transform ${speed}ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow ${speed}ms ease`;
+      inner.style.transform = 'rotateY(0deg) scale(1)';
+
+      const backFace = document.createElement('div');
+      backFace.className = 'card-flight-face card-flight-back';
+      backFace.innerHTML = '<img src="cards/back.png" alt="Dos" draggable="false">';
+
+      const frontFace = document.createElement('div');
+      frontFace.className = 'card-flight-face card-flight-front';
+      frontFace.innerHTML = `<img src="cards/${cardId}.png" alt="Carte ${cardId}" draggable="false">`;
+
+      inner.appendChild(backFace);
+      inner.appendChild(frontFace);
+      flyingEl.appendChild(inner);
+      document.body.appendChild(flyingEl);
+
+      elA.style.opacity = '0';
+
       requestAnimationFrame(() => {
-        const dx = rectB.left - rectA.left;
-        const dy = rectB.top - rectA.top;
-        const scale = (rectB.width && rectA.width) ? (rectB.width / rectA.width) : 1;
-        clone.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+        requestAnimationFrame(() => {
+          flyingEl.style.left = `${targetLeft}px`;
+          flyingEl.style.top = `${targetTop}px`;
+          const rotZ = (Math.random() - 0.5) * 8;
+          inner.style.transform = `rotateY(180deg) rotateZ(${rotZ}deg) scale(1.02)`;
+          inner.style.boxShadow = '0 12px 24px rgba(0,0,0,0.45)';
+          if (typeof RondaSound !== 'undefined') RondaSound.playSFX('slap');
+        });
       });
-    });
+    } else {
+      if (elA.querySelector('img') && !elA.classList.contains('back') && !isBack) {
+        flyingEl = elA.cloneNode(true);
+        flyingEl.classList.remove('capturing', 'shake', 'card-land', 'mine');
+      } else {
+        flyingEl = isBack ? makeCardBack() : makeCardEl(cardId);
+      }
+      flyingEl.classList.add('flying-card');
+      flyingEl.style.position = 'fixed';
+      flyingEl.style.left = `${rectA.left}px`;
+      flyingEl.style.top = `${rectA.top}px`;
+      flyingEl.style.width = `${cardW}px`;
+      flyingEl.style.height = `${cardH}px`;
+      flyingEl.style.transform = 'translate3d(0, 0, 0) scale(1) rotate(0deg)';
+      flyingEl.style.boxShadow = '0 6px 16px rgba(0,0,0,0.35)';
+      flyingEl.style.transition = `transform ${speed}ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow ${speed}ms ease, opacity ${speed}ms ease`;
+      flyingEl.style.pointerEvents = 'none';
+      flyingEl.style.zIndex = '9999';
+      document.body.appendChild(flyingEl);
+
+      elA.style.opacity = '0';
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const dx = targetLeft - rectA.left;
+          const dy = targetTop - rectA.top;
+          const rot = isPileTarget ? (Math.random() - 0.5) * 12 : (Math.random() - 0.5) * 6;
+          flyingEl.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(${scale}) rotate(${rot}deg)`;
+          flyingEl.style.boxShadow = isPileTarget ? '0 2px 6px rgba(0,0,0,0.2)' : '0 10px 20px rgba(0,0,0,0.4)';
+          if (isTableTarget && typeof RondaSound !== 'undefined') {
+            RondaSound.playSFX('slap');
+          }
+        });
+      });
+    }
 
     let finished = false;
     const done = () => {
       if (finished) return;
       finished = true;
-      clone.removeEventListener('transitionend', done);
-      if (clone.parentNode) clone.parentNode.removeChild(clone);
+      if (flyingEl && flyingEl.parentNode) flyingEl.parentNode.removeChild(flyingEl);
+      if (elA) elA.style.opacity = '1';
       resolve();
     };
 
-    clone.addEventListener('transitionend', done);
-    setTimeout(done, speed + 80);
+    flyingEl.addEventListener('transitionend', done);
+    setTimeout(done, speed + 100);
   });
 }
 
@@ -2460,16 +2591,18 @@ function animateRealisticCardFlight(fromEl, toEl, cardId, options = {}) {
     const speed = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--anim-speed')) || 0;
     if (speed <= 0) return resolve();
 
+    // Natural card dimensions: cards NEVER stretch to container width!
+    const cardW = (r1.width && r1.width < 120) ? r1.width : 68;
+    const cardH = (r1.height && r1.height < 180) ? r1.height : 102;
+
     const container = document.createElement("div");
     container.className = "card-flight-3d";
     container.style.left = `${r1.left}px`;
     container.style.top = `${r1.top}px`;
-    container.style.width = `${r1.width || 72}px`;
-    container.style.height = `${r1.height || 108}px`;
+    container.style.width = `${cardW}px`;
+    container.style.height = `${cardH}px`;
     container.style.transition = `left ${duration}ms cubic-bezier(0.25, 0.9, 0.35, 1),
-                                  top ${duration}ms cubic-bezier(0.25, 0.9, 0.35, 1),
-                                  width ${duration}ms ease,
-                                  height ${duration}ms ease`;
+                                  top ${duration}ms cubic-bezier(0.25, 0.9, 0.35, 1)`;
 
     const inner = document.createElement("div");
     inner.className = "card-flight-inner";
@@ -2509,25 +2642,35 @@ function animateRealisticCardFlight(fromEl, toEl, cardId, options = {}) {
     document.body.appendChild(container);
     container.getBoundingClientRect(); // force reflow
 
-    const targetW = r2.width || r1.width || 72;
-    const targetH = r2.height || r1.height || 108;
-    container.style.left = `${r2.left}px`;
-    container.style.top = `${r2.top}px`;
-    container.style.width = `${targetW}px`;
-    container.style.height = `${targetH}px`;
+    // Natural landing position inside target (never container width!)
+    let targetX = r2.left;
+    let targetY = r2.top;
+    if (r2.width > cardW * 1.4) {
+      targetX = r2.left + (r2.width - cardW) / 2;
+      targetY = r2.top + (r2.height - cardH) / 2;
+    }
+
+    container.style.left = `${targetX}px`;
+    container.style.top = `${targetY}px`;
 
     const flipRotY = isFlip ? 180 : 0;
-    inner.style.transform = `rotateY(${flipRotY}deg) rotateZ(${rotEnd}deg) scale(1.04)`;
+    inner.style.transform = `rotateY(${flipRotY}deg) rotateZ(${rotEnd}deg) scale(1.03)`;
     inner.style.boxShadow = `0 ${lift}px ${lift * 1.4}px rgba(0,0,0,0.45)`;
+
+    let finished = false;
+    const done = () => {
+      if (finished) return;
+      finished = true;
+      if (container.parentNode) container.parentNode.removeChild(container);
+      resolve();
+    };
 
     setTimeout(() => {
       inner.style.boxShadow = `0 4px 10px rgba(0,0,0,0.3)`;
     }, duration * 0.75);
 
-    setTimeout(() => {
-      if (container.parentNode) container.parentNode.removeChild(container);
-      resolve();
-    }, duration + 25);
+    container.addEventListener('transitionend', done);
+    setTimeout(done, duration + 35);
   });
 }
 
@@ -2729,6 +2872,8 @@ function saveGameState() {
 
 function render() {
   if (!g) return;
+  // Safety sweep: remove any lingering animation cards
+  document.querySelectorAll('.flying-card, .card-flight-3d').forEach(el => el.remove());
   const v = g.view(0);
 
   // Scoreboard
@@ -3764,6 +3909,19 @@ const UnoGameController = (() => {
     return new Promise(res => setTimeout(res, ms));
   }
 
+  function preloadUnoAssets() {
+    const images = ['cards/back.png', 'cards/wild.png', 'cards/wild_d4.png'];
+    for (let i = 0; i < 40; i++) images.push(`cards/${i}.png`);
+    ['copas', 'oros', 'bastos', 'espadas'].forEach(s => {
+      images.push(`cards/${s}_0.png`, `cards/${s}_8.png`, `cards/${s}_9.png`);
+    });
+    images.forEach(src => {
+      const img = new Image();
+      img.src = src;
+    });
+  }
+  preloadUnoAssets();
+
   function animateUnoFlight(fromEl, toEl, cardId, isBack = false, duration = 380, options = {}) {
     return new Promise(resolve => {
       if (!fromEl || !toEl) return resolve();
@@ -3776,16 +3934,17 @@ const UnoGameController = (() => {
       const rotStart = options.rotStart || 0;
       const rotEnd = options.rotEnd != null ? options.rotEnd : (Math.random() - 0.5) * 8;
 
+      const cardW = (r1.width && r1.width < 120) ? r1.width : 72;
+      const cardH = (r1.height && r1.height < 180) ? r1.height : 108;
+
       const container = document.createElement("div");
       container.className = "card-flight-3d";
       container.style.left = `${r1.left}px`;
       container.style.top = `${r1.top}px`;
-      container.style.width = `${r1.width || 72}px`;
-      container.style.height = `${r1.height || 108}px`;
+      container.style.width = `${cardW}px`;
+      container.style.height = `${cardH}px`;
       container.style.transition = `left ${duration}ms cubic-bezier(0.25, 0.9, 0.35, 1),
-                                    top ${duration}ms cubic-bezier(0.25, 0.9, 0.35, 1),
-                                    width ${duration}ms ease,
-                                    height ${duration}ms ease`;
+                                    top ${duration}ms cubic-bezier(0.25, 0.9, 0.35, 1)`;
 
       const inner = document.createElement("div");
       inner.className = "card-flight-inner";
@@ -3824,25 +3983,34 @@ const UnoGameController = (() => {
       document.body.appendChild(container);
       container.getBoundingClientRect();
 
-      const targetW = r2.width || r1.width || 72;
-      const targetH = r2.height || r1.height || 108;
-      container.style.left = `${r2.left}px`;
-      container.style.top = `${r2.top}px`;
-      container.style.width = `${targetW}px`;
-      container.style.height = `${targetH}px`;
+      let targetX = r2.left;
+      let targetY = r2.top;
+      if (r2.width > cardW * 1.4) {
+        targetX = r2.left + (r2.width - cardW) / 2;
+        targetY = r2.top + (r2.height - cardH) / 2;
+      }
+
+      container.style.left = `${targetX}px`;
+      container.style.top = `${targetY}px`;
 
       const flipRotY = isFlip ? 180 : 0;
       inner.style.transform = `rotateY(${flipRotY}deg) rotateZ(${rotEnd}deg) scale(1.03)`;
       inner.style.boxShadow = `0 ${lift}px ${lift * 1.4}px rgba(0,0,0,0.45)`;
 
+      let finished = false;
+      const done = () => {
+        if (finished) return;
+        finished = true;
+        if (container.parentNode) container.parentNode.removeChild(container);
+        resolve();
+      };
+
       setTimeout(() => {
         inner.style.boxShadow = `0 4px 10px rgba(0,0,0,0.3)`;
       }, duration * 0.75);
 
-      setTimeout(() => {
-        if (container.parentNode) container.parentNode.removeChild(container);
-        resolve();
-      }, duration + 25);
+      container.addEventListener('transitionend', done);
+      setTimeout(done, duration + 35);
     });
   }
 
